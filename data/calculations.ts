@@ -6,12 +6,328 @@ export interface Calculation {
 }
 
 export const CALCULATIONS: Calculation[] = [
+  // General
   {
     id: 'bmi',
     name: 'Body Mass Index (BMI)',
     description: 'Calculate BMI using weight and height',
     category: 'General'
   },
+  {
+    id: 'bsa',
+    name: 'Body Surface Area (Mosteller formula)',
+    description: 'Estimates the body surface area used for dosing medications and assessments.',
+    category: 'General'
+  },
+  {
+    id: 'ibw',
+    name: 'Ideal Body Weight (Devine formula)',
+    description: 'Estimates ideal body weight for dosing or nutritional assessment.',
+    category: 'General'
+  },
+  {
+    id: 'estimated-blood-volume',
+    name: 'Estimated Blood Volume',
+    description: 'Calculates estimated blood volume based on patient weight.',
+    category: 'General'
+  },
+
+  // Cardiology
+  {
+    id: 'map',
+    name: 'Mean Arterial Pressure (MAP)',
+    description: 'Calculates average blood pressure during a cardiac cycle',
+    category: 'Cardiology'
+  },
+  {
+    id: 'qtc',
+    name: 'Corrected QT Interval',
+    description: 'Adjusts QT interval for heart rate to assess cardiac repolarization.',
+    category: 'Cardiology'
+  },
+  {
+    id: 'cardiac-output',
+    name: 'Cardiac Output (Fick method)',
+    description: 'Calculates cardiac output using oxygen consumption and oxygen content.',
+    category: 'Cardiology'
+  },
+
+  // Neurology
+  {
+    id: 'gcs',
+    name: 'Glasgow Coma Scale (GCS)',
+    description: 'Evaluates level of consciousness through eye, verbal, and motor responses',
+    category: 'Neurology'
+  },
+
+  // Nephrology
+  {
+    id: 'creatinine-clearance',
+    name: 'Creatinine Clearance',
+    description: 'Estimates kidney function using age, weight, and serum creatinine',
+    category: 'Nephrology'
+  },
+  {
+    id: 'fen',
+    name: 'Fractional Excretion of Sodium (FENa)',
+    description: 'Assesses kidney function and differentiates prerenal from intrinsic AKI',
+    category: 'Nephrology'
+  },
+
+  // Hematology
+  {
+    id: 'warfarin-dose',
+    name: 'Warfarin Dose Adjustment',
+    description: 'Adjusts warfarin dose based on INR and target range',
+    category: 'Hematology'
+  },
+  {
+    id: 'hematocrit',
+    name: 'Hematocrit',
+    description: 'Calculates hematocrit from RBC count and MCV.',
+    category: 'Hematology'
+  },
+
+  // Metabolism
+  {
+    id: 'anion-gap',
+    name: 'Anion Gap',
+    description: 'Evaluates metabolic acidosis by measuring cation-anion difference',
+    category: 'Metabolism'
+  },
+  {
+    id: 'corrected-calcium',
+    name: 'Corrected Calcium',
+    description: 'Adjusts serum calcium levels based on albumin concentration',
+    category: 'Metabolism'
+  },
+  {
+    id: 'ldl',
+    name: 'LDL Cholesterol',
+    description: 'Calculates LDL cholesterol using the Friedewald equation.',
+    category: 'Metabolism'
+  },
+  {
+    id: 'serum-osmolality',
+    name: 'Serum Osmolality',
+    description: 'Estimates serum osmolality from sodium, glucose, and BUN.',
+    category: 'Metabolism'
+  },
+  {
+    id: 'transferrin-saturation',
+    name: 'Transferrin Saturation',
+    description: 'Calculates transferrin saturation from serum iron and TIBC.',
+    category: 'Metabolism'
+  },
+
+  // Pediatrics
+  {
+    id: 'child-dose',
+    name: 'Pediatric Dose Calculator',
+    description: 'Calculates adjusted doses for pediatric patients',
+    category: 'Pediatrics'
+  },
+  {
+    id: 'apgar',
+    name: 'APGAR Score',
+    description: 'Evaluates the health of newborns based on appearance, pulse, grimace, activity, and respiration.',
+    category: 'Pediatrics'
+  },
+
+  // Respiratory
+  {
+    id: 'alveolar-gas',
+    name: 'Alveolar Gas Equation',
+    description: 'Estimates alveolar oxygen pressure for assessing gas exchange efficiency in the lungs.',
+    category: 'Respiratory'
+  },
+  {
+    id: 'oxygenation-index',
+    name: 'Oxygenation Index',
+    description: 'Measures severity of hypoxic respiratory failure in ventilated patients.',
+    category: 'Respiratory'
+  },
+  {
+    id: 'tidal-volume',
+    name: 'Tidal Volume Calculator',
+    description: 'Calculates appropriate tidal volume based on patient characteristics.',
+    category: 'Respiratory'
+  },
+  {
+    id: 'tcpo2-pao2',
+    name: 'TcPO2/PaO2 Ratio',
+    description: 'Assesses tissue oxygenation by comparing transcutaneous and arterial oxygen levels.',
+    category: 'Respiratory'
+  },
+
+  // Critical Care
+  {
+    id: 'shock-index',
+    name: 'Shock Index',
+    description: 'A quick indicator of hemodynamic instability or shock using heart rate and systolic blood pressure.',
+    category: 'Critical Care'
+  },
+  {
+    id: 'estimated-blood-loss',
+    name: 'Estimated Blood Loss',
+    description: 'Calculates estimated blood loss during surgery using changes in hematocrit.',
+    category: 'Critical Care'
+  },
+
+  // Obstetrics
+  {
+    id: 'gestational-age',
+    name: 'Gestational Age Calculator',
+    description: 'Calculates gestational age and estimated due date based on LMP.',
+    category: 'Obstetrics'
+  },
+
+  // Pharmacology
+  {
+    id: 'infusion-rate',
+    name: 'Infusion Rate Calculator',
+    description: 'Calculates appropriate infusion rate for medications.',
+    category: 'Pharmacology'
+  },
+  {
+    id: 'naranjo',
+    name: 'Naranjo Adverse Drug Reaction Probability Scale',
+    description: 'Assesses likelihood of adverse drug reactions using standardized criteria.',
+    category: 'Pharmacology'
+  },
+  {
+    id: 'bmi',
+    name: 'Body Mass Index (BMI)',
+    description: 'Calculate BMI using weight and height',
+    category: 'General'
+  },
+  {
+    id: 'creatinine-clearance',
+    name: 'Creatinine Clearance',
+    description: 'Estimates kidney function using age, weight, and serum creatinine',
+    category: 'Nephrology'
+  },
+  {
+    id: 'gcs',
+    name: 'Glasgow Coma Scale (GCS)',
+    description: 'Evaluates level of consciousness through eye, verbal, and motor responses',
+    category: 'Neurology'
+  },
+  {
+    id: 'map',
+    name: 'Mean Arterial Pressure (MAP)',
+    description: 'Calculates average blood pressure during a cardiac cycle',
+    category: 'Cardiology'
+  },
+  {
+    id: 'anion-gap',
+    name: 'Anion Gap',
+    description: 'Evaluates metabolic acidosis by measuring cation-anion difference',
+    category: 'Metabolism'
+  },
+  {
+    id: 'corrected-calcium',
+    name: 'Corrected Calcium',
+    description: 'Adjusts serum calcium levels based on albumin concentration',
+    category: 'Metabolism'
+  },
+  {
+    id: 'warfarin-dose',
+    name: 'Warfarin Dose Adjustment',
+    description: 'Adjusts warfarin dose based on INR and target range',
+    category: 'Hematology'
+  },
+  {
+    id: 'fen',
+    name: 'Fractional Excretion of Sodium (FENa)',
+    description: 'Assesses kidney function and differentiates prerenal from intrinsic AKI',
+    category: 'Nephrology'
+  },
+  {
+    id: 'child-dose',
+    name: 'Pediatric Dose Calculator',
+    description: 'Calculates adjusted doses for pediatric patients',
+    category: 'Pediatrics'
+  },
+  {
+    id: 'alveolar-gas',
+    name: 'Alveolar Gas Equation',
+    description: 'Estimates alveolar oxygen pressure for assessing gas exchange efficiency in the lungs.',
+    category: 'Respiratory'
+  },
+  {
+    id: 'shock-index',
+    name: 'Shock Index',
+    description: 'A quick indicator of hemodynamic instability or shock using heart rate and systolic blood pressure.',
+    category: 'Critical Care'
+  },
+  {
+    id: 'bsa',
+    name: 'Body Surface Area (Mosteller formula)',
+    description: 'Estimates the body surface area used for dosing medications and assessments.',
+    category: 'General'
+  },
+  {
+    id: 'apgar',
+    name: 'APGAR Score',
+    description: 'Evaluates the health of newborns based on appearance, pulse, grimace, activity, and respiration.',
+    category: 'Pediatrics'
+  },
+  {
+    id: 'oxygenation-index',
+    name: 'Oxygenation Index',
+    description: 'Measures severity of hypoxic respiratory failure in ventilated patients.',
+    category: 'Respiratory'
+  },
+  {
+    id: 'ibw',
+    name: 'Ideal Body Weight (Devine formula)',
+    description: 'Estimates ideal body weight for dosing or nutritional assessment.',
+    category: 'General'
+  },
+  {
+    id: 'qtc',
+    name: 'Corrected QT Interval',
+    description: 'Adjusts QT interval for heart rate to assess cardiac repolarization.',
+    category: 'Cardiology'
+  },
+  {
+    id: 'estimated-blood-volume',
+    name: 'Estimated Blood Volume',
+    description: 'Calculates estimated blood volume based on patient weight.',
+    category: 'Metabolism'
+  },
+  {
+    id: 'ldl',
+    name: 'LDL Cholesterol',
+    description: 'Calculates LDL cholesterol using the Friedewald equation.',
+    category: 'Metabolism'
+  },
+  {
+    id: 'serum-osmolality',
+    name: 'Serum Osmolality',
+    description: 'Estimates serum osmolality from sodium, glucose, and BUN.',
+    category: 'Metabolism'
+  },
+  {
+    id: 'hematocrit',
+    name: 'Hematocrit',
+    description: 'Calculates hematocrit from RBC count and MCV.',
+    category: 'Hematology'
+  },
+  {
+    id: 'transferrin-saturation',
+    name: 'Transferrin Saturation',
+    description: 'Calculates transferrin saturation from serum iron and TIBC.',
+    category: 'Metabolism'
+  },
+  {
+    id: 'bmi',
+    name: 'Body Mass Index (BMI)',
+    description: 'Calculate BMI using weight and height',
+    category: 'General'
+  },
+
   {
     id: 'creatinine-clearance',
     name: 'Creatinine Clearance',
