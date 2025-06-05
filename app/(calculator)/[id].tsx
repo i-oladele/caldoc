@@ -14,19 +14,105 @@ interface InputField {
 interface CalculatorConfig {
   id: string;
   fields: InputField[];
+  validate: (values: { [key: string]: string }) => string | null;
   calculate: (values: { [key: string]: string }) => { result: number; interpretation: string };
   formula?: string;
   references?: string[];
-  resultUnit: string;  // Adding result unit
+  resultUnit: string;
 }
 
 const calculatorConfigs: { [key: string]: CalculatorConfig } = {
+  'corrected-calcium': {
+    id: 'corrected-calcium',
+    fields: [
+      { label: 'Total Calcium', placeholder: 'Enter total calcium', unit: 'mg/dL', keyboardType: 'decimal-pad' },
+      { label: 'Albumin', placeholder: 'Enter albumin', unit: 'g/dL', keyboardType: 'decimal-pad' }
+    ],
+    validate: (values) => {
+      const totalCalcium = values['Total Calcium'];
+      const albumin = values.Albumin;
+      
+      if (!totalCalcium || !albumin) {
+        return 'Please enter both total calcium and albumin values';
+      }
+      
+      const totalCalciumNum = parseFloat(totalCalcium);
+      const albuminNum = parseFloat(albumin);
+      
+      if (isNaN(totalCalciumNum) || isNaN(albuminNum)) {
+        return 'Please enter valid numbers for total calcium and albumin';
+      }
+      
+      if (totalCalciumNum <= 0 || albuminNum <= 0) {
+        return 'Total calcium and albumin must be greater than zero';
+      }
+      
+      if (albuminNum > 6) {
+        return 'Albumin value seems unusually high (normal range is 3.5-5.0 g/dL)';
+      }
+      
+      return null; // No validation error
+    },
+    calculate: (values) => {
+      const totalCalcium = parseFloat(values['Total Calcium']);
+      const albumin = parseFloat(values.Albumin);
+      
+      // Corrected Calcium = Total Calcium + 0.8 × (4 - Albumin)
+      const correctedCalcium = totalCalcium + 0.8 * (4 - albumin);
+      
+      let interpretation = '';
+      if (correctedCalcium < 8.5) interpretation = 'Hypocalcemia';
+      else if (correctedCalcium <= 10.5) interpretation = 'Normal calcium level';
+      else interpretation = 'Hypercalcemia';
+
+      return {
+        result: parseFloat(correctedCalcium.toFixed(1)),
+        interpretation
+      };
+    },
+    formula: 'Corrected Calcium = Total Calcium + 0.8 × (4 - Albumin)',
+    references: [
+      'American Society of Nephrology. Clinical Practice Guidelines for Calcium Metabolism.',
+      'Endocrine Society. Guidelines for the Management of Calcium Disorders.',
+      'Journal of Clinical Endocrinology & Metabolism. Assessment of Calcium Status.'
+    ],
+    resultUnit: 'mg/dL'
+  },
   'bmi': {
     id: 'bmi',
     fields: [
       { label: 'Weight', placeholder: 'Enter weight', unit: 'kg', keyboardType: 'decimal-pad' },
-      { label: 'Height', placeholder: 'Enter height', unit: 'cm', keyboardType: 'decimal-pad' },
+      { label: 'Height', placeholder: 'Enter height', unit: 'cm', keyboardType: 'decimal-pad' }
     ],
+    validate: (values) => {
+      const weight = values.Weight;
+      const height = values.Height;
+      
+      if (!weight || !height) {
+        return 'Please enter both weight and height values';
+      }
+      
+      const weightNum = parseFloat(weight);
+      const heightNum = parseFloat(height);
+      
+      if (isNaN(weightNum) || isNaN(heightNum)) {
+        return 'Please enter valid numbers for weight and height';
+      }
+      
+      if (weightNum <= 0 || heightNum <= 0) {
+        return 'Weight and height must be greater than zero';
+      }
+      
+      if (heightNum < 50 || heightNum > 250) {
+        return 'Height seems unusual (normal range is 50-250 cm)';
+      }
+      
+      if (weightNum < 10 || weightNum > 500) {
+        return 'Weight seems unusual (normal range is 10-500 kg)';
+      }
+      
+      return null; // No validation error
+    },
     calculate: (values) => {
       const weight = parseFloat(values.Weight);
       const height = parseFloat(values.Height) / 100; // convert cm to m
@@ -56,15 +142,52 @@ const calculatorConfigs: { [key: string]: CalculatorConfig } = {
     fields: [
       { label: 'Age', placeholder: 'Enter age', unit: 'years', keyboardType: 'numeric' },
       { label: 'Weight', placeholder: 'Enter weight', unit: 'kg', keyboardType: 'decimal-pad' },
-      { label: 'Serum Creatinine', placeholder: 'Enter serum creatinine', unit: 'mg/dL', keyboardType: 'decimal-pad' },
+      { label: 'Serum Creatinine', placeholder: 'Enter creatinine', unit: 'mg/dL', keyboardType: 'decimal-pad' },
       { label: 'Gender', placeholder: 'Enter 1 for male, 0 for female', unit: '', keyboardType: 'numeric' }
     ],
+    validate: (values) => {
+      const age = values.Age;
+      const weight = values.Weight;
+      const creatinine = values['Serum Creatinine'];
+      const gender = values.Gender;
+      
+      if (!age || !weight || !creatinine || !gender) {
+        return 'Please enter all required values';
+      }
+      
+      const ageNum = parseInt(age);
+      const weightNum = parseFloat(weight);
+      const creatinineNum = parseFloat(creatinine);
+      const genderNum = parseInt(gender);
+      
+      if (isNaN(ageNum) || isNaN(weightNum) || isNaN(creatinineNum) || isNaN(genderNum)) {
+        return 'Please enter valid numbers for all values';
+      }
+      
+      if (ageNum <= 0 || ageNum > 150) {
+        return 'Age must be between 0 and 150 years';
+      }
+      
+      if (weightNum <= 0 || weightNum > 500) {
+        return 'Weight must be between 0 and 500 kg';
+      }
+      
+      if (creatinineNum <= 0 || creatinineNum > 20) {
+        return 'Creatinine value seems unusual (normal range is typically <20 mg/dL)';
+      }
+      
+      if (genderNum !== 0 && genderNum !== 1) {
+        return 'Gender must be 0 (female) or 1 (male)';
+      }
+      
+      return null; // No validation error
+    },
     calculate: (values) => {
       const age = parseFloat(values.Age);
       const weight = parseFloat(values.Weight);
       const serumCreatinine = parseFloat(values['Serum Creatinine']);
       const gender = parseInt(values.Gender);
-
+      
       // Cockcroft-Gault equation
       let creatinineClearance = ((140 - age) * weight) / (72 * serumCreatinine);
       if (gender === 0) { // female
@@ -91,539 +214,120 @@ const calculatorConfigs: { [key: string]: CalculatorConfig } = {
     ],
     resultUnit: 'mL/min'
   },
-  'map': {
-    id: 'map',
+  'gfr': {
+    id: 'gfr',
     fields: [
-      { label: 'Systolic BP', placeholder: 'Enter systolic blood pressure', unit: 'mmHg', keyboardType: 'numeric' },
-      { label: 'Diastolic BP', placeholder: 'Enter diastolic blood pressure', unit: 'mmHg', keyboardType: 'numeric' }
-    ],
-    calculate: (values) => {
-      const systolic = parseFloat(values['Systolic BP']);
-      const diastolic = parseFloat(values['Diastolic BP']);
-      
-      // MAP = DBP + 1/3(SBP - DBP)
-      const map = diastolic + (1/3) * (systolic - diastolic);
-      
-      let interpretation = '';
-      if (map < 60) interpretation = 'Low MAP - Inadequate organ perfusion';
-      else if (map <= 100) interpretation = 'Normal MAP';
-      else interpretation = 'Elevated MAP - Consider hypertensive crisis if very high';
-
-      return {
-        result: parseFloat(map.toFixed(1)),
-        interpretation
-      };
-    },
-    formula: 'MAP = DBP + 1/3(SBP - DBP)',
-    references: [
-      'American Heart Association. Understanding Blood Pressure Readings.',
-      'Journal of Critical Care. Mean arterial pressure targets for critically ill patients.',
-      'European Society of Cardiology. Guidelines for the management of arterial hypertension.'
-    ],
-    resultUnit: 'mmHg'
-  },
-  'anion-gap': {
-    id: 'anion-gap',
-    fields: [
-      { label: 'Sodium', placeholder: 'Enter sodium level', unit: 'mEq/L', keyboardType: 'decimal-pad' },
-      { label: 'Chloride', placeholder: 'Enter chloride level', unit: 'mEq/L', keyboardType: 'decimal-pad' },
-      { label: 'Bicarbonate', placeholder: 'Enter bicarbonate level', unit: 'mEq/L', keyboardType: 'decimal-pad' }
-    ],
-    calculate: (values) => {
-      const sodium = parseFloat(values.Sodium);
-      const chloride = parseFloat(values.Chloride);
-      const bicarbonate = parseFloat(values.Bicarbonate);
-      
-      // Anion Gap = Na⁺ - (Cl⁻ + HCO₃⁻)
-      const anionGap = sodium - (chloride + bicarbonate);
-      
-      let interpretation = '';
-      if (anionGap < 3) interpretation = 'Low anion gap - Consider lab error or rare conditions';
-      else if (anionGap <= 11) interpretation = 'Normal anion gap';
-      else if (anionGap <= 20) interpretation = 'Elevated anion gap - Consider metabolic acidosis';
-      else interpretation = 'High anion gap - Significant metabolic acidosis present';
-
-      return {
-        result: parseFloat(anionGap.toFixed(1)),
-        interpretation
-      };
-    },
-    formula: 'Anion Gap = Na⁺ - (Cl⁻ + HCO₃⁻)',
-    references: [
-      'American Association for Clinical Chemistry. Anion Gap: Reference Range, Interpretation, Collection and Panels.',
-      'New England Journal of Medicine. Clinical Use of the Anion Gap.',
-      'Critical Care Medicine. Assessment of Acid-Base Disorders.'
-    ],
-    resultUnit: 'mEq/L'
-  },
-  'bsa': {
-    id: 'bsa',
-    fields: [
-      { label: 'Height', placeholder: 'Enter height', unit: 'cm', keyboardType: 'decimal-pad' },
-      { label: 'Weight', placeholder: 'Enter weight', unit: 'kg', keyboardType: 'decimal-pad' }
-    ],
-    calculate: (values) => {
-      const height = parseFloat(values.Height);
-      const weight = parseFloat(values.Weight);
-      
-      // Mosteller formula: BSA (m²) = √[(Height × Weight) / 3600]
-      const bsa = Math.sqrt((height * weight) / 3600);
-      
-      let interpretation = '';
-      if (bsa < 1.5) interpretation = 'Below average BSA';
-      else if (bsa <= 2.0) interpretation = 'Normal BSA range';
-      else interpretation = 'Above average BSA';
-
-      return {
-        result: parseFloat(bsa.toFixed(2)),
-        interpretation
-      };
-    },
-    formula: 'BSA = √[(Height × Weight) / 3600] (Mosteller formula)',
-    references: [
-      'Mosteller RD. Simplified calculation of body surface area. N Engl J Med. 1987.',
-      'Journal of Clinical Oncology. Body Surface Area-Based Chemotherapy Dosing.',
-      'Clinical Pharmacology & Therapeutics. The use of body surface area for dosing calculations.'
-    ],
-    resultUnit: 'm²'
-  },
-  'ibw': {
-    id: 'ibw',
-    fields: [
-      { label: 'Height', placeholder: 'Enter height', unit: 'cm', keyboardType: 'decimal-pad' },
+      { label: 'Age', placeholder: 'Enter age', unit: 'years', keyboardType: 'numeric' },
+      { label: 'Serum Creatinine', placeholder: 'Enter creatinine', unit: 'mg/dL', keyboardType: 'decimal-pad' },
       { label: 'Gender', placeholder: 'Enter 1 for male, 0 for female', unit: '', keyboardType: 'numeric' }
     ],
-    calculate: (values) => {
-      const height = parseFloat(values.Height);
-      const gender = parseInt(values.Gender);
-      const heightInInches = height / 2.54; // Convert cm to inches
+    validate: (values) => {
+      const age = values.Age;
+      const creatinine = values['Serum Creatinine'];
+      const gender = values.Gender;
       
-      // Devine formula
-      let ibw;
-      if (gender === 1) { // male
-        ibw = 50 + 2.3 * (heightInInches - 60);
-      } else { // female
-        ibw = 45.5 + 2.3 * (heightInInches - 60);
+      if (!age || !creatinine || !gender) {
+        return 'Please enter all required values';
       }
       
-      let interpretation = '';
-      if (heightInInches < 60) {
-        interpretation = 'Height is below 5 feet (60 inches). Formula may be less accurate.';
-      } else {
-        interpretation = `Ideal body weight based on height and gender. Use for medication dosing and clinical assessments.`;
-      }
-
-      return {
-        result: parseFloat(ibw.toFixed(1)),
-        interpretation
-      };
-    },
-    formula: 'Male: IBW = 50 kg + 2.3 kg × (height in inches - 60)\nFemale: IBW = 45.5 kg + 2.3 kg × (height in inches - 60)',
-    references: [
-      'Devine BJ. Gentamicin therapy. Drug Intell Clin Pharm. 1974.',
-      'American Society of Health-System Pharmacists. ASHP Guidelines on Dosing Drugs in Renal Impairment.',
-      'Critical Care Medicine. Drug Dosing Based on Ideal Body Weight.'
-    ],
-    resultUnit: 'kg'
-  },
-  'gcs': {
-    id: 'gcs',
-    fields: [
-      { label: 'Eye Opening', placeholder: 'Enter score (1-4)', unit: 'points', keyboardType: 'numeric' },
-      { label: 'Verbal Response', placeholder: 'Enter score (1-5)', unit: 'points', keyboardType: 'numeric' },
-      { label: 'Motor Response', placeholder: 'Enter score (1-6)', unit: 'points', keyboardType: 'numeric' }
-    ],
-    calculate: (values) => {
-      const eyeScore = parseInt(values['Eye Opening']);
-      const verbalScore = parseInt(values['Verbal Response']);
-      const motorScore = parseInt(values['Motor Response']);
+      const ageNum = parseInt(age);
+      const creatinineNum = parseFloat(creatinine);
+      const genderNum = parseInt(gender);
       
-      const totalScore = eyeScore + verbalScore + motorScore;
-      
-      let interpretation = '';
-      if (totalScore === 15) interpretation = 'Normal consciousness';
-      else if (totalScore >= 13) interpretation = 'Mild brain injury';
-      else if (totalScore >= 9) interpretation = 'Moderate brain injury';
-      else interpretation = 'Severe brain injury';
-
-      return {
-        result: totalScore,
-        interpretation
-      };
-    },
-    formula: 'GCS = Eye Opening (1-4) + Verbal Response (1-5) + Motor Response (1-6)',
-    references: [
-      'Teasdale G, Jennett B. Assessment of coma and impaired consciousness. Lancet. 1974.',
-      'Journal of Neurosurgery. The Glasgow Coma Scale: Clinical Application and Validation.',
-      'Brain Injury. Guidelines for the Management of Severe Traumatic Brain Injury.'
-    ],
-    resultUnit: 'points'
-  },
-  'shock-index': {
-    id: 'shock-index',
-    fields: [
-      { label: 'Heart Rate', placeholder: 'Enter heart rate', unit: 'bpm', keyboardType: 'numeric' },
-      { label: 'Systolic BP', placeholder: 'Enter systolic blood pressure', unit: 'mmHg', keyboardType: 'numeric' }
-    ],
-    calculate: (values) => {
-      const heartRate = parseFloat(values['Heart Rate']);
-      const systolicBP = parseFloat(values['Systolic BP']);
-      
-      const shockIndex = heartRate / systolicBP;
-      
-      let interpretation = '';
-      if (shockIndex < 0.5) interpretation = 'Below normal range';
-      else if (shockIndex <= 0.7) interpretation = 'Normal range';
-      else if (shockIndex <= 1.0) interpretation = 'Mild shock - Monitor closely';
-      else interpretation = 'Severe shock - Immediate intervention needed';
-
-      return {
-        result: parseFloat(shockIndex.toFixed(2)),
-        interpretation
-      };
-    },
-    formula: 'Shock Index = Heart Rate / Systolic Blood Pressure',
-    references: [
-      'Rady MY, et al. A comparison of the shock index and conventional vital signs to identify acute, critical illness in the emergency department.',
-      'Critical Care Medicine. Shock Index as a Predictor of Mortality.',
-      'Emergency Medicine Journal. Clinical Applications of the Shock Index.'
-    ],
-    resultUnit: ''  // ratio has no unit
-  },
-  'apgar': {
-    id: 'apgar',
-    fields: [
-      { label: 'Appearance', placeholder: 'Enter score (0-2)', unit: 'points', keyboardType: 'numeric' },
-      { label: 'Pulse', placeholder: 'Enter score (0-2)', unit: 'points', keyboardType: 'numeric' },
-      { label: 'Grimace', placeholder: 'Enter score (0-2)', unit: 'points', keyboardType: 'numeric' },
-      { label: 'Activity', placeholder: 'Enter score (0-2)', unit: 'points', keyboardType: 'numeric' },
-      { label: 'Respiration', placeholder: 'Enter score (0-2)', unit: 'points', keyboardType: 'numeric' }
-    ],
-    calculate: (values) => {
-      const appearance = parseInt(values.Appearance);
-      const pulse = parseInt(values.Pulse);
-      const grimace = parseInt(values.Grimace);
-      const activity = parseInt(values.Activity);
-      const respiration = parseInt(values.Respiration);
-      
-      const totalScore = appearance + pulse + grimace + activity + respiration;
-      
-      let interpretation = '';
-      if (totalScore >= 7) interpretation = 'Normal to excellent condition';
-      else if (totalScore >= 4) interpretation = 'Moderately depressed';
-      else interpretation = 'Severely depressed - Requires immediate intervention';
-
-      return {
-        result: totalScore,
-        interpretation
-      };
-    },
-    formula: 'APGAR = Appearance (0-2) + Pulse (0-2) + Grimace (0-2) + Activity (0-2) + Respiration (0-2)',
-    references: [
-      'Apgar V. A proposal for a new method of evaluation of the newborn infant. Anesth Analg. 1953.',
-      'American Academy of Pediatrics. The APGAR Score.',
-      'Neonatal Network. Clinical Guidelines for the Use of the APGAR Score.'
-    ],
-    resultUnit: 'points'
-  },
-  'corrected-calcium': {
-    id: 'corrected-calcium',
-    fields: [
-      { label: 'Total Calcium', placeholder: 'Enter total calcium', unit: 'mg/dL', keyboardType: 'decimal-pad' },
-      { label: 'Albumin', placeholder: 'Enter albumin', unit: 'g/dL', keyboardType: 'decimal-pad' }
-    ],
-    calculate: (values) => {
-      const totalCalcium = parseFloat(values['Total Calcium']);
-      const albumin = parseFloat(values.Albumin);
-      
-      // Corrected Calcium = Total Calcium + 0.8 × (4 - Albumin)
-      const correctedCalcium = totalCalcium + 0.8 * (4 - albumin);
-      
-      let interpretation = '';
-      if (correctedCalcium < 8.5) interpretation = 'Hypocalcemia';
-      else if (correctedCalcium <= 10.5) interpretation = 'Normal calcium level';
-      else interpretation = 'Hypercalcemia';
-
-      return {
-        result: parseFloat(correctedCalcium.toFixed(1)),
-        interpretation
-      };
-    },
-    formula: 'Corrected Calcium = Total Calcium + 0.8 × (4 - Albumin)',
-    references: [
-      'American Society of Nephrology. Clinical Practice Guidelines for Calcium Metabolism.',
-      'Endocrine Society. Guidelines for the Management of Calcium Disorders.',
-      'Journal of Clinical Endocrinology & Metabolism. Assessment of Calcium Status.'
-    ],
-    resultUnit: 'mg/dL'
-  },
-  'warfarin-dose': {
-    id: 'warfarin-dose',
-    fields: [
-      { label: 'Current INR', placeholder: 'Enter current INR', unit: '', keyboardType: 'decimal-pad' },
-      { label: 'Target INR', placeholder: 'Enter target INR', unit: '', keyboardType: 'decimal-pad' },
-      { label: 'Current Dose', placeholder: 'Enter current daily dose', unit: 'mg', keyboardType: 'decimal-pad' }
-    ],
-    calculate: (values) => {
-      const currentINR = parseFloat(values['Current INR']);
-      const targetINR = parseFloat(values['Target INR']);
-      const currentDose = parseFloat(values['Current Dose']);
-      
-      let percentageChange = 0;
-      let newDose = currentDose;
-      
-      if (currentINR < targetINR - 0.5) {
-        percentageChange = 15;
-        newDose = currentDose * (1 + percentageChange/100);
-      } else if (currentINR > targetINR + 0.5) {
-        percentageChange = -15;
-        newDose = currentDose * (1 + percentageChange/100);
+      if (isNaN(ageNum) || isNaN(creatinineNum) || isNaN(genderNum)) {
+        return 'Please enter valid numbers for all values';
       }
       
-      let interpretation = '';
-      if (percentageChange === 0) {
-        interpretation = 'INR is within therapeutic range. Maintain current dose.';
-      } else {
-        interpretation = `Adjust dose by ${Math.abs(percentageChange)}% ${percentageChange > 0 ? 'increase' : 'decrease'}. Monitor closely.`;
+      if (ageNum <= 0 || ageNum > 150) {
+        return 'Age must be between 0 and 150 years';
       }
-
-      return {
-        result: parseFloat(newDose.toFixed(1)),
-        interpretation
-      };
-    },
-    formula: 'New Dose = Current Dose × (1 ± Percentage Change)\nTypically ±15% adjustment for out-of-range INR',
-    references: [
-      'American College of Chest Physicians. Antithrombotic Therapy Guidelines.',
-      'Journal of Thrombosis and Haemostasis. Warfarin Dose Adjustment Protocols.',
-      'Clinical Pharmacology & Therapeutics. Optimizing Warfarin Dose Adjustment.'
-    ],
-    resultUnit: 'mg/day'
-  },
-  'fena': {
-    id: 'fena',
-    fields: [
-      { label: 'Urine Sodium', placeholder: 'Enter urine sodium', unit: 'mEq/L', keyboardType: 'decimal-pad' },
-      { label: 'Serum Sodium', placeholder: 'Enter serum sodium', unit: 'mEq/L', keyboardType: 'decimal-pad' },
-      { label: 'Urine Creatinine', placeholder: 'Enter urine creatinine', unit: 'mg/dL', keyboardType: 'decimal-pad' },
-      { label: 'Serum Creatinine', placeholder: 'Enter serum creatinine', unit: 'mg/dL', keyboardType: 'decimal-pad' }
-    ],
-    calculate: (values) => {
-      const uNa = parseFloat(values['Urine Sodium']);
-      const sNa = parseFloat(values['Serum Sodium']);
-      const uCr = parseFloat(values['Urine Creatinine']);
-      const sCr = parseFloat(values['Serum Creatinine']);
       
-      // FENa = [(UNa × SCr) / (SNa × UCr)] × 100
-      const fena = ((uNa * sCr) / (sNa * uCr)) * 100;
-      
-      let interpretation = '';
-      if (fena < 1) interpretation = 'Suggests pre-renal AKI (e.g., volume depletion)';
-      else if (fena <= 2) interpretation = 'Borderline - Clinical correlation required';
-      else interpretation = 'Suggests intrinsic renal AKI';
-
-      return {
-        result: parseFloat(fena.toFixed(2)),
-        interpretation
-      };
-    },
-    formula: 'FENa = [(UNa × SCr) / (SNa × UCr)] × 100',
-    references: [
-      'Clinical Journal of the American Society of Nephrology. Use of FENa in AKI.',
-      'Kidney International. Diagnostic Approach to Acute Kidney Injury.',
-      'American Journal of Kidney Diseases. Urinary Indices in Acute Kidney Injury.'
-    ],
-    resultUnit: '%'
-  },
-  'pediatric-dosage': {
-    id: 'pediatric-dosage',
-    fields: [
-      { label: 'Child Weight', placeholder: 'Enter child weight', unit: 'kg', keyboardType: 'decimal-pad' },
-      { label: 'Adult Dose', placeholder: 'Enter adult dose', unit: 'mg', keyboardType: 'decimal-pad' }
-    ],
-    calculate: (values) => {
-      const weight = parseFloat(values['Child Weight']);
-      const adultDose = parseFloat(values['Adult Dose']);
-      
-      // Clark's Rule: Child's dose = (Weight in kg / 70) × Adult dose
-      const childDose = (weight / 70) * adultDose;
-      
-      let interpretation = '';
-      if (weight < 10) {
-        interpretation = 'Use caution: Very young child. Consider consulting pediatric dosing guidelines.';
-      } else if (weight > 50) {
-        interpretation = 'Consider using adult dosing if child is post-pubertal.';
-      } else {
-        interpretation = 'Standard pediatric dose calculation based on Clark\'s Rule.';
+      if (creatinineNum <= 0 || creatinineNum > 20) {
+        return 'Creatinine value seems unusual (normal range is typically <20 mg/dL)';
       }
-
-      return {
-        result: parseFloat(childDose.toFixed(1)),
-        interpretation
-      };
+      
+      if (genderNum !== 0 && genderNum !== 1) {
+        return 'Gender must be 0 (female) or 1 (male)';
+      }
+      
+      return null; // No validation error
     },
-    formula: 'Child\'s Dose = (Weight in kg / 70) × Adult Dose',
-    references: [
-      'Clark\'s Rule for Pediatric Drug Dosing. Clinical Pharmacology.',
-      'American Academy of Pediatrics. Pediatric Drug Dosing Guidelines.',
-      'Journal of Pediatric Pharmacology. Weight-based Dosing in Children.'
-    ],
-    resultUnit: 'mg'
-  },
-  'oxygenation-index': {
-    id: 'oxygenation-index',
-    fields: [
-      { label: 'Mean Airway Pressure', placeholder: 'Enter MAP', unit: 'cmH₂O', keyboardType: 'decimal-pad' },
-      { label: 'FiO2', placeholder: 'Enter FiO2 (0.21-1.0)', unit: '', keyboardType: 'decimal-pad' },
-      { label: 'PaO2', placeholder: 'Enter PaO2', unit: 'mmHg', keyboardType: 'decimal-pad' }
-    ],
     calculate: (values) => {
-      const map = parseFloat(values['Mean Airway Pressure']);
-      const fio2 = parseFloat(values.FiO2);
-      const pao2 = parseFloat(values.PaO2);
-      
-      // OI = (FiO2 × Mean Airway Pressure × 100) / PaO2
-      const oi = (fio2 * map * 100) / pao2;
-      
-      let interpretation = '';
-      if (oi < 4) interpretation = 'Mild respiratory dysfunction';
-      else if (oi <= 8) interpretation = 'Moderate respiratory dysfunction';
-      else if (oi <= 15) interpretation = 'Severe respiratory dysfunction';
-      else if (oi <= 25) interpretation = 'Very severe respiratory dysfunction';
-      else interpretation = 'Extremely severe respiratory dysfunction - Consider ECMO';
-
-      return {
-        result: parseFloat(oi.toFixed(1)),
-        interpretation
-      };
-    },
-    formula: 'OI = (FiO2 × Mean Airway Pressure × 100) / PaO2',
-    references: [
-      'Pediatric Critical Care Medicine. Oxygenation Index as a Predictor of ECMO.',
-      'Journal of Pediatrics. Assessment of Respiratory Failure Using OI.',
-      'Critical Care Medicine. Guidelines for Management of Pediatric Respiratory Failure.'
-    ],
-    resultUnit: ''  // dimensionless
-  },
-  'qtc': {
-    id: 'qtc',
-    fields: [
-      { label: 'QT Interval', placeholder: 'Enter QT interval', unit: 'ms', keyboardType: 'numeric' },
-      { label: 'Heart Rate', placeholder: 'Enter heart rate', unit: 'bpm', keyboardType: 'numeric' }
-    ],
-    calculate: (values) => {
-      const qt = parseFloat(values['QT Interval']);
-      const hr = parseFloat(values['Heart Rate']);
-      
-      // Bazett's formula: QTc = QT / √(RR)
-      // RR interval in seconds = 60 / HR
-      const rr = 60 / hr;
-      const qtc = qt / Math.sqrt(rr);
-      
-      let interpretation = '';
-      if (qtc < 350) interpretation = 'Short QTc interval';
-      else if (qtc <= 440) interpretation = 'Normal QTc interval';
-      else if (qtc <= 500) interpretation = 'Prolonged QTc interval - Monitor closely';
-      else interpretation = 'Severely prolonged QTc - High risk of arrhythmia';
-
-      return {
-        result: parseFloat(qtc.toFixed(0)),
-        interpretation
-      };
-    },
-    formula: 'QTc = QT / √(60/HR) (Bazett\'s formula)',
-    references: [
-      'American Heart Association. Guidelines for QT Interval Correction.',
-      'European Heart Journal. Assessment of the QT Interval.',
-      'Journal of Cardiovascular Electrophysiology. QT Correction Formulas.'
-    ],
-    resultUnit: 'ms'
-  },
-  'bmi-percentile': {
-    id: 'bmi-percentile',
-    fields: [
-      { label: 'Weight', placeholder: 'Enter weight', unit: 'kg', keyboardType: 'decimal-pad' },
-      { label: 'Height', placeholder: 'Enter height', unit: 'cm', keyboardType: 'decimal-pad' },
-      { label: 'Age', placeholder: 'Enter age', unit: 'years', keyboardType: 'decimal-pad' },
-      { label: 'Gender', placeholder: 'Enter 1 for male, 0 for female', unit: '', keyboardType: 'numeric' }
-    ],
-    calculate: (values) => {
-      const weight = parseFloat(values.Weight);
-      const height = parseFloat(values.Height) / 100; // convert to meters
+      const creatinine = parseFloat(values.Creatinine);
       const age = parseFloat(values.Age);
       const gender = parseInt(values.Gender);
       
-      // Calculate BMI first
-      const bmi = weight / (height * height);
-      
-      // Note: This is a simplified interpretation.
-      // In practice, exact percentiles require CDC growth chart data
-      let interpretation = '';
-      if (bmi < 5) interpretation = 'Underweight (< 5th percentile)';
-      else if (bmi < 85) interpretation = 'Healthy weight (5th to 85th percentile)';
-      else if (bmi < 95) interpretation = 'Overweight (85th to 95th percentile)';
-      else interpretation = 'Obese (≥ 95th percentile)';
-
-      return {
-        result: parseFloat(bmi.toFixed(1)),
-        interpretation
-      };
-    },
-    formula: 'BMI = weight (kg) / [height (m)]²\nThen compared to age and gender-specific CDC growth charts',
-    references: [
-      'Centers for Disease Control and Prevention (CDC). BMI Percentile Calculator for Child and Teen.',
-      'World Health Organization (WHO). Child Growth Standards.',
-      'American Academy of Pediatrics. Assessment of Child and Teen BMI.'
-    ],
-    resultUnit: 'percentile'
-  },
-  'shock-volume': {
-    id: 'shock-volume',
-    fields: [
-      { label: 'Weight', placeholder: 'Enter weight', unit: 'kg', keyboardType: 'decimal-pad' },
-      { label: 'Blood Loss', placeholder: 'Enter estimated blood loss %', unit: '%', keyboardType: 'numeric' }
-    ],
-    calculate: (values) => {
-      const weight = parseFloat(values.Weight);
-      const bloodLossPercent = parseFloat(values['Blood Loss']);
-      
-      // Estimated blood volume = 70 mL/kg
-      const totalBloodVolume = weight * 70;
-      const bloodLoss = (bloodLossPercent / 100) * totalBloodVolume;
-      const replacementVolume = bloodLoss * 3; // 3:1 replacement ratio for crystalloids
-      
-      let interpretation = '';
-      if (bloodLossPercent < 15) {
-        interpretation = 'Class I hemorrhage - Monitor vital signs';
-      } else if (bloodLossPercent <= 30) {
-        interpretation = 'Class II hemorrhage - Crystalloid replacement indicated';
-      } else if (bloodLossPercent <= 40) {
-        interpretation = 'Class III hemorrhage - Blood products may be needed';
-      } else {
-        interpretation = 'Class IV hemorrhage - Immediate blood transfusion required';
+      // MDRD equation
+      let gfr = 175 * Math.pow(creatinine, -1.154) * Math.pow(age, -0.203);
+      if (gender === 0) { // female
+        gfr *= 0.742;
       }
+      
+      let interpretation = '';
+      if (gfr >= 90) interpretation = 'Normal kidney function';
+      else if (gfr >= 60) interpretation = 'Mild kidney dysfunction';
+      else if (gfr >= 30) interpretation = 'Moderate kidney dysfunction';
+      else if (gfr >= 15) interpretation = 'Severe kidney dysfunction';
+      else interpretation = 'Kidney failure';
 
       return {
-        result: parseFloat(replacementVolume.toFixed(0)),
+        result: parseFloat(gfr.toFixed(1)),
         interpretation
       };
     },
-    formula: 'Replacement Volume = Blood Loss × 3\nBlood Loss = Weight × 70 mL/kg × (Loss %)',
+    formula: 'GFR = 175 × Scr^(-1.154) × age^(-0.203) × 0.742 (if female)',
     references: [
-      'American College of Surgeons. Advanced Trauma Life Support (ATLS) Guidelines.',
-      'Journal of Trauma and Acute Care Surgery. Fluid Resuscitation in Hemorrhagic Shock.',
-      'Critical Care Medicine. Management of Severe Hemorrhage.'
+      'National Kidney Foundation. K/DOQI Clinical Practice Guidelines for Chronic Kidney Disease.',
+      'American Society of Nephrology. Guidelines for estimating GFR.',
+      'Journal of the American Society of Nephrology. MDRD Study Equation.'
     ],
-    resultUnit: 'mL'
+    resultUnit: 'mL/min/1.73m²'
   },
   'egfr': {
     id: 'egfr',
     fields: [
-      { label: 'Creatinine', placeholder: 'Enter serum creatinine', unit: 'mg/dL', keyboardType: 'decimal-pad' },
       { label: 'Age', placeholder: 'Enter age', unit: 'years', keyboardType: 'numeric' },
+      { label: 'Serum Creatinine', placeholder: 'Enter creatinine', unit: 'mg/dL', keyboardType: 'decimal-pad' },
       { label: 'Gender', placeholder: 'Enter 1 for male, 0 for female', unit: '', keyboardType: 'numeric' },
-      { label: 'Race', placeholder: 'Enter 1 for Black, 0 for other', unit: '', keyboardType: 'numeric' }
+      { label: 'Race', placeholder: 'Enter 1 for Black, 0 for non-Black', unit: '', keyboardType: 'numeric' }
     ],
+    validate: (values) => {
+      const age = values.Age;
+      const creatinine = values['Serum Creatinine'];
+      const gender = values.Gender;
+      const race = values.Race;
+      
+      if (!age || !creatinine || !gender || !race) {
+        return 'Please enter all required values';
+      }
+      
+      const ageNum = parseInt(age);
+      const creatinineNum = parseFloat(creatinine);
+      const genderNum = parseInt(gender);
+      const raceNum = parseInt(race);
+      
+      if (isNaN(ageNum) || isNaN(creatinineNum) || isNaN(genderNum) || isNaN(raceNum)) {
+        return 'Please enter valid numbers for all values';
+      }
+      
+      if (ageNum <= 0 || ageNum > 150) {
+        return 'Age must be between 0 and 150 years';
+      }
+      
+      if (creatinineNum <= 0 || creatinineNum > 20) {
+        return 'Creatinine value seems unusual (normal range is typically <20 mg/dL)';
+      }
+      
+      if (genderNum !== 0 && genderNum !== 1) {
+        return 'Gender must be 0 (female) or 1 (male)';
+      }
+      
+      if (raceNum !== 0 && raceNum !== 1) {
+        return 'Race must be 0 (non-Black) or 1 (Black)';
+      }
+      
+      return null; // No validation error
+    },
     calculate: (values) => {
       const creatinine = parseFloat(values.Creatinine);
       const age = parseFloat(values.Age);
