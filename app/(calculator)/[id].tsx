@@ -1822,55 +1822,52 @@ const calculatorConfigs: { [key: string]: CalculatorConfig } = {
     ],
     resultUnit: 'L/min'
   },
-  'pregnancy-dates': {
-    id: 'pregnancy-dates',
+  'pregnancy': {
+    id: 'pregnancy',
     fields: [
-      { 
-        label: 'Input Type', 
-        placeholder: 'Enter 1 for LMP, 2 for EGA, 3 for EDD', 
-        unit: '', 
-        keyboardType: 'numeric' 
-      },
-      { 
-        label: 'Date', 
-        placeholder: 'Enter date (YYYY-MM-DD)', 
-        unit: '', 
-        keyboardType: 'default' 
-      },
-      { 
-        label: 'Gestational Age', 
-        placeholder: 'Enter weeks if using EGA (e.g., 12.3)', 
-        unit: 'weeks', 
-        keyboardType: 'decimal-pad' 
-      }
+      { label: 'Input Type', placeholder: 'Enter 1 for LMP, 2 for GA, 3 for EDD', unit: '', keyboardType: 'numeric' },
+      { label: 'Input Date', placeholder: 'Enter date (YYYY-MM-DD) or GA (weeks)', unit: '', keyboardType: 'default' }
     ],
     calculate: (values) => {
       const inputType = parseInt(values['Input Type']);
-      const inputDate = values.Date;
-      const gestationalAge = parseFloat(values['Gestational Age'] || '0');
-
-      const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
-      const DAYS_IN_PREGNANCY = 280; // 40 weeks
+      const inputDate = values['Input Date'];
+      const currentDate = new Date();
+      let lmp: Date;
       
-      let lmp = new Date();
-      let currentDate = new Date();
+      const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+      const DAYS_IN_PREGNANCY = 280;
       
       try {
-        // Calculate based on input type
+        // Validate input type
+        if (![1, 2, 3].includes(inputType)) {
+          throw new Error('Invalid input type. Please enter 1 for LMP, 2 for GA, or 3 for EDD.');
+        }
+
+        // Input type specific validation and calculation
         switch(inputType) {
           case 1: // LMP provided
             lmp = new Date(inputDate);
+            if (isNaN(lmp.getTime())) {
+              throw new Error('Invalid LMP date format. Please use YYYY-MM-DD format.');
+            }
+            if (lmp > currentDate) {
+              throw new Error('LMP date cannot be in the future.');
+            }
             break;
             
           case 2: // EGA provided
-            if (isNaN(gestationalAge)) throw new Error('Invalid gestational age');
-            // Calculate LMP by subtracting gestational age from current date
+            const gestationalAge = parseFloat(inputDate);
+            if (isNaN(gestationalAge) || gestationalAge < 0 || gestationalAge > 45) {
+              throw new Error('Invalid gestational age. Please enter a number between 0 and 45 weeks.');
+            }
             lmp = new Date(currentDate.getTime() - (gestationalAge * 7 * MILLISECONDS_PER_DAY));
             break;
             
           case 3: // EDD provided
             const edd = new Date(inputDate);
-            // Calculate LMP by subtracting 40 weeks from EDD
+            if (isNaN(edd.getTime())) {
+              throw new Error('Invalid EDD date format. Please use YYYY-MM-DD format.');
+            }
             lmp = new Date(edd.getTime() - (DAYS_IN_PREGNANCY * MILLISECONDS_PER_DAY));
             break;
             
@@ -1878,11 +1875,15 @@ const calculatorConfigs: { [key: string]: CalculatorConfig } = {
             throw new Error('Invalid input type');
         }
         
-        // Calculate EDD (LMP + 280 days)
+        // Calculate EDD
         const edd = new Date(lmp.getTime() + (DAYS_IN_PREGNANCY * MILLISECONDS_PER_DAY));
         
         // Calculate current gestational age
         const daysPregnant = Math.floor((currentDate.getTime() - lmp.getTime()) / MILLISECONDS_PER_DAY);
+        if (daysPregnant < 0) {
+          throw new Error('Calculated dates are invalid. Please check your input.');
+        }
+        
         const weeksPregnant = Math.floor(daysPregnant / 7);
         const remainingDays = daysPregnant % 7;
         
@@ -1891,31 +1892,35 @@ const calculatorConfigs: { [key: string]: CalculatorConfig } = {
           return date.toISOString().split('T')[0];
         };
         
-        const interpretation = `
+        let interpretation = '';
+        if (weeksPregnant < 0) {
+          interpretation = 'Error: Invalid dates calculated';
+        } else if (weeksPregnant > 45) {
+          interpretation = 'Warning: Calculated gestational age exceeds 45 weeks';
+        } else {
+          interpretation = `
 Last Menstrual Period: ${formatDate(lmp)}
 Current Gestational Age: ${weeksPregnant} weeks ${remainingDays} days
 Estimated Due Date: ${formatDate(edd)}
-        `.trim();
+          `.trim();
+        }
 
         return {
-          result: weeksPregnant + (remainingDays / 7),
+          result: parseFloat((weeksPregnant + remainingDays / 7).toFixed(1)),
           interpretation
         };
       } catch (error) {
         return {
           result: 0,
-          interpretation: 'Error: Please check your input format and try again.'
+          interpretation: `Error: ${(error as Error).message || 'Please check your input format and try again.'}`
         };
       }
     },
-    formula: `Based on:
-• Last Menstrual Period (LMP)
-• Naegele's rule: EDD = LMP + 280 days
-• Gestational Age = (Current Date - LMP) / 7`,
+    formula: 'GA = (Current Date - LMP) / 7\nEDD = LMP + 280 days',
     references: [
       'American College of Obstetricians and Gynecologists. Methods for Estimating Due Date.',
       'World Health Organization. Pregnancy Dating and Assessment.',
-      "Journal of Midwifery & Women's Health. Pregnancy Dating Methods."
+      'Journal of Obstetrics and Gynecology. Gestational Age Calculation Methods.'
     ],
     resultUnit: 'weeks'
   }
