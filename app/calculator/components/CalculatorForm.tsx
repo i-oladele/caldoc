@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Keyboard, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { InputField } from '../config/calculator';
 import { ThemedText } from '@/components/ThemedText';
 
@@ -9,6 +9,7 @@ interface CalculatorFormProps {
   onChange: (field: string, value: string) => void;
   error?: string | null;
   onSubmit: () => void;
+  onReset: () => void;
 }
 
 export const CalculatorForm: React.FC<CalculatorFormProps> = ({
@@ -16,88 +17,131 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   values,
   onChange,
   error,
-  onSubmit
+  onSubmit,
+  onReset,
 }) => {
   return (
     <View style={styles.container}>
+      <View style={styles.headerRow}>
+        <ThemedText style={styles.title}>Input Values</ThemedText>
+        <TouchableOpacity onPress={onReset} style={styles.resetButton}>
+          <ThemedText style={styles.resetButtonText}>Reset</ThemedText>
+        </TouchableOpacity>
+      </View>
       {fields.map((field) => (
         <View key={field.label} style={styles.inputContainer}>
-          <View style={styles.labelContainer}>
-            <ThemedText style={styles.label}>{field.label}</ThemedText>
+          <ThemedText style={styles.label}>{field.label}</ThemedText>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="0"
+              placeholderTextColor="#999"
+              keyboardType="decimal-pad"
+              value={values[field.label]}
+              onChangeText={(text) => onChange(field.label, text)}
+            />
             <ThemedText style={styles.unit}>{field.unit}</ThemedText>
           </View>
-          <TextInput
-            style={styles.input}
-            placeholder={field.placeholder}
-            keyboardType={field.keyboardType}
-            value={values[field.label]}
-            onChangeText={(text) => onChange(field.label, text)}
-          />
         </View>
       ))}
       
-      {error && (
-        <ThemedText style={styles.error}>{error}</ThemedText>
-      )}
+
       
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.submitButton}
-          onPress={onSubmit}
-        >
-          <ThemedText style={styles.submitButtonText}>Calculate</ThemedText>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity 
+        style={styles.submitButton}
+        onPress={onSubmit}
+        activeOpacity={0.8}
+      >
+        <ThemedText style={styles.submitButtonText}>Calculate</ThemedText>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 24,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    margin: 16,
+    marginHorizontal: 8, // Increased width by reducing horizontal margin
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 1,
   },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  labelContainer: {
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    fontFamily: 'DMSans_600SemiBold',
+  },
+  resetButton: {
+    padding: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: '#F5F5F5',
+  },
+  resetButtonText: {
+    color: '#3D50B5',
+    fontSize: 14,
+    fontFamily: 'DMSans_500Medium',
+  },
+  inputContainer: {
+    marginBottom: 24,
   },
   label: {
     fontSize: 16,
-    fontWeight: '500',
+    color: '#4A4A4A',
+    marginBottom: 8,
+    fontFamily: 'DMSans_500Medium',
   },
-  unit: {
-    fontSize: 14,
-    color: '#666',
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    paddingHorizontal: 16,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
+    flex: 1,
+    height: 56,
     fontSize: 16,
+    color: '#333',
+    fontFamily: 'DMSans_400Regular',
+    paddingVertical: 0,
+  },
+  unit: {
+    fontSize: 16,
+    color: '#666',
+    fontFamily: 'DMSans_400Regular',
+    marginLeft: 8,
   },
   error: {
-    color: '#ff3b30',
-    marginTop: 8,
+    color: '#FF3B30',
     fontSize: 14,
-  },
-  buttonContainer: {
-    marginTop: 24,
-    alignItems: 'center',
+    marginTop: 8,
+    fontFamily: 'DMSans_500Medium',
   },
   submitButton: {
-    backgroundColor: '#007AFF',
-    padding: 12,
+    backgroundColor: '#3D50B5',
     borderRadius: 8,
-    width: '100%',
+    height: 56,
+    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 8,
   },
   submitButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'DMSans_600SemiBold',
   },
 });

@@ -23,6 +23,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  text: {
+    fontFamily: 'DMSans_400Regular',
+  },
 });
 
 export default function RootLayout() {

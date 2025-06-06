@@ -50,11 +50,13 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 20,
+    fontFamily: 'DM-Sans',
     fontWeight: 'bold',
   },
   link: {
     lineHeight: 30,
     fontSize: 16,
+    fontFamily: 'DM-Sans',
     color: '#0a7ea4',
   },
 });
