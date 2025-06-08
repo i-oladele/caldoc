@@ -1,8 +1,8 @@
-import Bookmark from '@/assets/svg/Bookmark.svg';
-import BookmarkFilled from '@/assets/svg/Bookmark_filled.svg';
 import { useFavorites } from '@/context/FavoritesContext';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Platform, TouchableOpacity } from 'react-native';
+import Bookmark from '../../assets/svg/Bookmark.svg';
+import BookmarkFilled from '../../assets/svg/Bookmark_filled.svg';
 
 export default function CalculatorLayout() {
   const { id } = useLocalSearchParams();

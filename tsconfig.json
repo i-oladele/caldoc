@@ -10,9 +10,11 @@
     "moduleResolution": "node16",
     "allowJs": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "@components/*": ["./components/*"],
+      "@data/*": ["./data/*"],
+      "@context/*": ["./context/*"],
+      "@app/*": ["./app/*"]
     }
   },
   "include": [

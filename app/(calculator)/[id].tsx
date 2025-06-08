@@ -1,12 +1,12 @@
+import { CalculatorForm } from '@/app/calculator/components/CalculatorForm';
+import { CalculatorResult } from '@/app/calculator/components/CalculatorResult';
+import { loadCalculatorConfig } from '@/app/calculator/config';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 import { ThemedText } from '@/components/ThemedText';
 import { CALCULATIONS } from '@/data/calculations';
 import { useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, View, SafeAreaView, TouchableOpacity } from 'react-native';
-import { loadCalculatorConfig } from '@/app/calculator/config';
-import { CalculatorConfig } from '@/app/calculator/config/calculator';
-import { CalculatorForm } from '@/app/calculator/components/CalculatorForm';
-import { CalculatorResult } from '@/app/calculator/components/CalculatorResult';
+import { useEffect, useState } from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 type Tab = 'calculator' | 'facts';
 
