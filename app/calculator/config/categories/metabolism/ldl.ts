@@ -1,21 +1,30 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const ldlConfig: CalculatorConfig = {
   id: 'ldl',
+  name: 'LDL Cholesterol Calculator',
+  description: 'Calculates LDL cholesterol using the Friedewald formula',
+  category: 'metabolism',
   fields: [
     {
+      id: 'totalCholesterol',
+      type: 'number',
       label: 'Total Cholesterol',
       placeholder: 'Enter total cholesterol (mg/dL)',
       unit: 'mg/dL',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'hdl',
+      type: 'number',
       label: 'HDL',
       placeholder: 'Enter HDL (mg/dL)',
       unit: 'mg/dL',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'triglycerides',
+      type: 'number',
       label: 'Triglycerides',
       placeholder: 'Enter triglycerides (mg/dL)',
       unit: 'mg/dL',
@@ -66,12 +75,12 @@ export const ldlConfig: CalculatorConfig = {
     };
   },
   formula: 'LDL = Total Cholesterol - HDL - (Triglycerides/5)',
+  resultUnit: 'mg/dL',
   references: [
     'Friedewald WT, et al. Estimation of LDL-cholesterol concentration without ultracentrifugation.',
     'Clinical Chemistry. LDL Cholesterol Calculation Methods.',
     'Journal of Lipid Research. Validation of the Friedewald Formula.'
-  ],
-  resultUnit: 'mg/dL'
+  ]
 };
 
 export default ldlConfig;

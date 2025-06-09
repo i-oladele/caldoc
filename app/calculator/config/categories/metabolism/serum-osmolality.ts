@@ -2,20 +2,29 @@ import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator
 
 export const serumOsmolalityConfig: CalculatorConfig = {
   id: 'serum-osmolality',
+  name: 'Serum Osmolality',
+  description: 'Calculates serum osmolality using sodium, glucose, and BUN levels',
+  category: 'metabolism',
   fields: [
     {
+      id: 'sodium',
+      type: 'number',
       label: 'Sodium',
       placeholder: 'Enter sodium (mEq/L)',
       unit: 'mEq/L',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'glucose',
+      type: 'number',
       label: 'Glucose',
       placeholder: 'Enter glucose (mg/dL)',
       unit: 'mg/dL',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'bun',
+      type: 'number',
       label: 'BUN',
       placeholder: 'Enter BUN (mg/dL)',
       unit: 'mg/dL',
@@ -23,20 +32,21 @@ export const serumOsmolalityConfig: CalculatorConfig = {
     }
   ],
   validate: (values: { [key: string]: string }) => {
-    const sodium = parseFloat(values.Sodium);
-    const glucose = parseFloat(values.Glucose);
-    const bun = parseFloat(values.BUN);
+    const errors: { [key: string]: string } = {};
+    const sodium = parseFloat(values.sodium);
+    const glucose = parseFloat(values.glucose);
+    const bun = parseFloat(values.bun);
     
     if (isNaN(sodium) || sodium <= 0) {
-      return 'Sodium must be positive';
+      errors.sodium = 'Sodium must be positive';
     }
     if (isNaN(glucose) || glucose <= 0) {
-      return 'Glucose must be positive';
+      errors.glucose = 'Glucose must be positive';
     }
     if (isNaN(bun) || bun <= 0) {
-      return 'BUN must be positive';
+      errors.bun = 'BUN must be positive';
     }
-    return null;
+    return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
     const sodium = parseFloat(values.Sodium);

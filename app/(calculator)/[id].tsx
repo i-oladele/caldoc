@@ -59,9 +59,11 @@ export default function CalculatorScreen() {
 
   const handleCalculate = () => {
     try {
-      const validationError = config.validate(values);
-      if (validationError) {
-        throw new Error(validationError);
+      const validationErrors = config.validate(values);
+      if (validationErrors) {
+        // If there are validation errors, get the first error message
+        const firstErrorKey = Object.keys(validationErrors)[0];
+        throw new Error(validationErrors[firstErrorKey]);
       }
       const calculationResult = config.calculate(values);
       setResult(calculationResult);

@@ -2,14 +2,21 @@ import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator
 
 export const transferrinSaturationConfig: CalculatorConfig = {
   id: 'transferrin-saturation',
+  name: 'Transferrin Saturation',
+  description: 'Calculates transferrin saturation percentage using serum iron and total iron binding capacity (TIBC) to assess iron status.',
+  category: 'metabolism',
   fields: [
     {
+      id: 'serumIron',
+      type: 'number',
       label: 'Serum Iron',
       placeholder: 'Enter serum iron (mcg/dL)',
       unit: 'mcg/dL',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'tibc',
+      type: 'number',
       label: 'Total Iron Binding Capacity',
       placeholder: 'Enter TIBC (mcg/dL)',
       unit: 'mcg/dL',
@@ -17,16 +24,17 @@ export const transferrinSaturationConfig: CalculatorConfig = {
     }
   ],
   validate: (values: { [key: string]: string }) => {
+    const errors: { [key: string]: string } = {};
     const iron = parseFloat(values['Serum Iron']);
     const tibc = parseFloat(values['Total Iron Binding Capacity']);
     
     if (isNaN(iron) || iron <= 0) {
-      return 'Serum iron must be positive';
+      errors['serumIron'] = 'Serum iron must be positive';
     }
     if (isNaN(tibc) || tibc <= 0) {
-      return 'TIBC must be positive';
+      errors['tibc'] = 'TIBC must be positive';
     }
-    return null;
+    return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
     const iron = parseFloat(values['Serum Iron']);

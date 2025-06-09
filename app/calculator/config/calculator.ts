@@ -1,14 +1,25 @@
 export interface InputField {
+  id: string;
   label: string;
-  placeholder: string;
-  unit: string;
-  keyboardType: 'numeric' | 'decimal-pad' | 'number-pad' | 'default';
+  type: 'number' | 'select' | 'radio' | 'checkbox';
+  placeholder?: string;
+  required?: boolean;
+  options?: Array<{ label: string; value: string }>;
+  min?: number;
+  max?: number;
+  step?: number;
+  unit?: string;
+  keyboardType?: 'numeric' | 'decimal-pad' | 'number-pad' | 'default';
+  value?: string;
 }
 
 export interface CalculatorConfig {
   id: string;
+  name: string;
+  description: string;
+  category: string;
   fields: InputField[];
-  validate: (values: { [key: string]: string }) => string | null;
+  validate: (values: { [key: string]: string }) => Record<string, string> | null;
   calculate: (values: { [key: string]: string }) => { result: number; interpretation: string };
   formula?: string;
   references?: string[];

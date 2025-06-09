@@ -8,6 +8,7 @@ export interface CalculatorConfig {
     id: string;
     label: string;
     type: 'number' | 'select' | 'radio' | 'checkbox';
+    placeholder?: string;
     required?: boolean;
     options?: Array<{ label: string; value: string }>;
     min?: number;

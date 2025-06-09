@@ -2,20 +2,29 @@ import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator
 
 export const anionGapConfig: CalculatorConfig = {
   id: 'anion-gap',
+  name: 'Anion Gap',
+  description: 'Calculate the anion gap, which is used to help identify the cause of metabolic acidosis.',
+  category: 'Metabolism',
   fields: [
     {
+      id: 'sodium',
+      type: 'number',
       label: 'Sodium',
       placeholder: 'Enter sodium (mEq/L)',
       unit: 'mEq/L',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'chloride',
+      type: 'number',
       label: 'Chloride',
       placeholder: 'Enter chloride (mEq/L)',
       unit: 'mEq/L',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'bicarbonate',
+      type: 'number',
       label: 'Bicarbonate',
       placeholder: 'Enter bicarbonate (mEq/L)',
       unit: 'mEq/L',
@@ -23,20 +32,21 @@ export const anionGapConfig: CalculatorConfig = {
     }
   ],
   validate: (values: { [key: string]: string }) => {
-    const sodium = parseFloat(values.Sodium);
-    const chloride = parseFloat(values.Chloride);
-    const bicarbonate = parseFloat(values.Bicarbonate);
+    const errors: Record<string, string> = {};
+    const sodium = parseFloat(values.sodium);
+    const chloride = parseFloat(values.chloride);
+    const bicarbonate = parseFloat(values.bicarbonate);
     
     if (isNaN(sodium) || sodium <= 0) {
-      return 'Sodium must be positive';
+      errors.sodium = 'Sodium must be positive';
     }
     if (isNaN(chloride) || chloride <= 0) {
-      return 'Chloride must be positive';
+      errors.chloride = 'Chloride must be positive';
     }
     if (isNaN(bicarbonate) || bicarbonate <= 0) {
-      return 'Bicarbonate must be positive';
+      errors.bicarbonate = 'Bicarbonate must be positive';
     }
-    return null;
+    return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
     const sodium = parseFloat(values.Sodium);

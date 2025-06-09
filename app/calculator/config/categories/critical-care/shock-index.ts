@@ -2,31 +2,38 @@ import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator
 
 export const shockIndexConfig: CalculatorConfig = {
   id: 'shock-index',
+  name: 'Shock Index',
+  description: 'Calculates the Shock Index (heart rate divided by systolic blood pressure) to assess the severity of shock.',
+  category: 'Critical Care',
   fields: [
     {
+      id: 'heartRate',
+      type: 'number',
       label: 'Heart Rate',
       placeholder: 'Enter heart rate (bpm)',
-      unit: 'bpm',
-      keyboardType: 'decimal-pad'
+      unit: 'bpm'
     },
     {
+      id: 'systolicBP',
+      type: 'number',
       label: 'Systolic Blood Pressure',
       placeholder: 'Enter systolic blood pressure (mmHg)',
-      unit: 'mmHg',
-      keyboardType: 'decimal-pad'
+      unit: 'mmHg'
     }
   ],
   validate: (values: { [key: string]: string }) => {
-    const hr = parseFloat(values['Heart Rate']);
-    const sbp = parseFloat(values['Systolic Blood Pressure']);
+    const hr = parseFloat(values['heartRate']);
+    const sbp = parseFloat(values['systolicBP']);
+    const errors: { [key: string]: string } = {};
     
     if (isNaN(hr) || hr <= 0) {
-      return 'Heart rate must be positive';
+      errors['heartRate'] = 'Heart rate must be positive';
     }
     if (isNaN(sbp) || sbp <= 0) {
-      return 'Systolic blood pressure must be positive';
+      errors['systolicBP'] = 'Systolic blood pressure must be positive';
     }
-    return null;
+    
+    return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
     const hr = parseFloat(values['Heart Rate']);

@@ -2,51 +2,71 @@ import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator
 
 export const creatinineClearanceConfig: CalculatorConfig = {
   id: 'creatinine-clearance',
+  name: 'Creatinine Clearance',
+  description: 'Estimates the glomerular filtration rate (GFR) to assess kidney function using the Cockcroft-Gault formula.',
+  category: 'nephrology',
   fields: [
     {
+      id: 'age',
+      type: 'number',
       label: 'Age',
       placeholder: 'Enter age (years)',
       unit: 'years',
-      keyboardType: 'numeric'
+      keyboardType: 'numeric',
+      min: 0,
+      max: 120
     },
     {
+      id: 'weight',
+      type: 'number',
       label: 'Weight',
       placeholder: 'Enter weight (kg)',
       unit: 'kg',
-      keyboardType: 'decimal-pad'
+      keyboardType: 'decimal-pad',
+      min: 0
     },
     {
+      id: 'creatinine',
+      type: 'number',
       label: 'Serum Creatinine',
       placeholder: 'Enter creatinine (mg/dL)',
       unit: 'mg/dL',
-      keyboardType: 'decimal-pad'
+      keyboardType: 'decimal-pad',
+      min: 0
     },
     {
+      id: 'gender',
+      type: 'select',
       label: 'Gender',
       placeholder: 'Select gender',
       unit: '',
-      keyboardType: 'default'
+      keyboardType: 'default',
+      options: [
+        { label: 'Male', value: 'male' },
+        { label: 'Female', value: 'female' }
+      ]
     }
   ],
   validate: (values: { [key: string]: string }) => {
+    const errors: { [key: string]: string } = {};
     const age = parseFloat(values.Age);
     const weight = parseFloat(values.Weight);
     const creatinine = parseFloat(values['Serum Creatinine']);
-    const gender = values.Gender.toLowerCase();
+    const gender = values.Gender?.toLowerCase();
     
     if (isNaN(age) || age <= 0) {
-      return 'Age must be positive';
+      errors['age'] = 'Age must be positive';
     }
     if (isNaN(weight) || weight <= 0) {
-      return 'Weight must be positive';
+      errors['weight'] = 'Weight must be positive';
     }
     if (isNaN(creatinine) || creatinine <= 0) {
-      return 'Creatinine must be positive';
+      errors['creatinine'] = 'Creatinine must be positive';
     }
     if (!gender || (gender !== 'male' && gender !== 'female')) {
-      return 'Please select a valid gender';
+      errors['gender'] = 'Please select a valid gender';
     }
-    return null;
+    return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
     const age = parseFloat(values.Age);

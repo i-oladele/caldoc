@@ -1,11 +1,11 @@
-import BookmarkFilled from '@/assets/svg/Bookmark_filled.svg';
-import Search from '@/assets/svg/Search.svg';
-import { ThemedText } from '@/components/ThemedText';
 import { useFavorites } from '@/context/FavoritesContext';
-import { CALCULATIONS } from '@/data/calculations';
+import { ThemedText } from '@components/ThemedText';
 import { Link } from 'expo-router';
 import { useRef, useState } from 'react';
 import { FlatList, ListRenderItem, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import BookmarkFilled from '../../assets/svg/Bookmark_filled.svg';
+import Search from '../../assets/svg/Search.svg';
+import { CALCULATIONS } from '../../data/calculations';
 
 interface Calculation {
   id: string;

@@ -2,26 +2,37 @@ import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator
 
 export const alveolarGasConfig: CalculatorConfig = {
   id: 'alveolar-gas',
+  name: 'Alveolar Gas Equation',
+  description: 'Calculates the alveolar oxygen tension (PAO2) using the alveolar gas equation',
+  category: 'respiratory',
   fields: [
     {
+      id: 'paco2',
+      type: 'number',
       label: 'PaCO2',
       placeholder: 'Enter arterial CO2 pressure (mmHg)',
       unit: 'mmHg',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'fio2',
+      type: 'number',
       label: 'FiO2',
       placeholder: 'Enter inspired oxygen fraction (decimal)',
       unit: '',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'pb',
+      type: 'number',
       label: 'Pb',
       placeholder: 'Enter barometric pressure (mmHg)',
       unit: 'mmHg',
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'r',
+      type: 'number',
       label: 'R',
       placeholder: 'Enter respiratory quotient (default 0.8)',
       unit: '',
@@ -29,24 +40,26 @@ export const alveolarGasConfig: CalculatorConfig = {
     }
   ],
   validate: (values: { [key: string]: string }) => {
+    const errors: { [key: string]: string } = {};
     const paco2 = parseFloat(values.PaCO2);
     const fio2 = parseFloat(values.FiO2);
     const pb = parseFloat(values.Pb);
     const r = parseFloat(values.R);
     
     if (isNaN(paco2) || paco2 <= 0) {
-      return 'PaCO2 must be positive';
+      errors.PaCO2 = 'PaCO2 must be positive';
     }
     if (isNaN(fio2) || fio2 <= 0 || fio2 > 1) {
-      return 'FiO2 must be between 0 and 1';
+      errors.FiO2 = 'FiO2 must be between 0 and 1';
     }
     if (isNaN(pb) || pb <= 0) {
-      return 'Barometric pressure must be positive';
+      errors.Pb = 'Barometric pressure must be positive';
     }
     if (isNaN(r) || r <= 0) {
-      return 'Respiratory quotient must be positive';
+      errors.R = 'Respiratory quotient must be positive';
     }
-    return null;
+    
+    return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
     const paco2 = parseFloat(values.PaCO2);
