@@ -52,9 +52,15 @@ export const cardiacOutputConfig: CalculatorConfig = {
     return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
-    const vo2 = parseFloat(values['VO2']);
-    const caO2 = parseFloat(values['CaO2']);
-    const cvO2 = parseFloat(values['CvO2']);
+    const vo2 = parseFloat(values['vo2']);
+    const caO2 = parseFloat(values['cao2']);
+    const cvO2 = parseFloat(values['cvo2']);
+    
+    // Prevent division by zero or negative values
+    if (isNaN(vo2) || isNaN(caO2) || isNaN(cvO2) || caO2 <= cvO2) {
+      throw new Error('Invalid input values for cardiac output calculation');
+    }
+    
     const cardiacOutput = vo2 / ((caO2 - cvO2) * 10);
     
     let interpretation = '';
@@ -64,7 +70,8 @@ export const cardiacOutputConfig: CalculatorConfig = {
 
     return {
       result: parseFloat(cardiacOutput.toFixed(1)),
-      interpretation: `${interpretation} (Cardiac Output: ${cardiacOutput.toFixed(1)} L/min)`
+      interpretation: `${interpretation} (Cardiac Output: ${cardiacOutput.toFixed(1)} L/min)`,
+      resultUnit: 'L/min'
     };
   },
   formula: 'Cardiac Output (L/min) = VO2 / [(CaO2 - CvO2) × 10]\nwhere:\nVO2 = Oxygen consumption\nCaO2 = Arterial oxygen content\nCvO2 = Venous oxygen content',

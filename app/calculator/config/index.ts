@@ -40,23 +40,36 @@ const CALCULATOR_EXPORTS: { [key: string]: string } = {
 };
 
 export const loadCalculatorConfig = (id: string): CalculatorConfig => {
+  console.log(`Loading calculator config for ID: ${id}`);
+  
   // Validate the calculator ID exists
   const calculator = CALCULATIONS.find(calc => calc.id === id);
   if (!calculator) {
-    throw new Error(`Calculator not found for id: ${id}`);
+    const errorMsg = `Calculator not found for id: ${id}`;
+    console.error(errorMsg);
+    throw new Error(errorMsg);
   }
 
   // Get the export name for this calculator ID
   const exportName = CALCULATOR_EXPORTS[id];
   if (!exportName) {
-    throw new Error(`No export name found for calculator: ${id}`);
+    const errorMsg = `No export name found for calculator: ${id}`;
+    console.error(errorMsg);
+    console.log('Available calculator exports:', Object.keys(CALCULATOR_EXPORTS));
+    throw new Error(errorMsg);
   }
 
+  console.log(`Export name for ${id}:`, exportName);
+  
   // Get the calculator configuration from the index
   const config = (Calculators as unknown as Calculators)[exportName];
   if (!config) {
-    throw new Error(`No configuration found for calculator: ${id}`);
+    const errorMsg = `No configuration found for calculator: ${id} (export name: ${exportName})`;
+    console.error(errorMsg);
+    console.log('Available calculator configs:', Object.keys(Calculators));
+    throw new Error(errorMsg);
   }
 
+  console.log(`Successfully loaded config for ${id}:`, config);
   return config;
 };

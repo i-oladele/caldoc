@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
-import { InputField } from '../config/calculator';
 import { ThemedText } from '@/components/ThemedText';
+import React, { useState } from 'react';
+import { Platform, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { InputField } from '../config/calculator';
 
 interface CalculatorFormProps {
   fields: InputField[];
@@ -20,6 +20,8 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   onSubmit,
   onReset,
 }) => {
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
@@ -28,22 +30,31 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
           <ThemedText style={styles.resetButtonText}>Reset</ThemedText>
         </TouchableOpacity>
       </View>
-      {fields.map((field) => (
-        <View key={field.label} style={styles.inputContainer}>
-          <ThemedText style={styles.label}>{field.label}</ThemedText>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="0"
-              placeholderTextColor="#999"
-              keyboardType="decimal-pad"
-              value={values[field.label]}
-              onChangeText={(text) => onChange(field.label, text)}
-            />
-            <ThemedText style={styles.unit}>{field.unit}</ThemedText>
+      {fields.map((field) => {
+        const fieldKey = field.id || field.label;
+        const isFocused = focusedField === fieldKey;
+
+        return (
+          <View key={field.label} style={styles.inputContainer}>
+            <ThemedText style={styles.label}>{field.label}</ThemedText>
+            <View style={[styles.inputWrapper, isFocused && styles.inputWrapperFocused]}>
+              <TextInput
+                style={styles.input}
+                placeholder="0"
+                placeholderTextColor="#999"
+                keyboardType="decimal-pad"
+                value={values[field.label] ?? ''}
+                onChangeText={(text) => onChange(field.label, text)}
+                onFocus={() => setFocusedField(fieldKey)}
+                onBlur={() => setFocusedField((prev) => (prev === fieldKey ? null : prev))}
+                underlineColorAndroid="transparent"
+                selectionColor="#3D50B5"
+              />
+              <ThemedText style={styles.unit}>{field.unit}</ThemedText>
+            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
       
 
       
@@ -111,6 +122,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
   },
+  inputWrapperFocused: {
+    borderColor: '#3D50B5',
+    backgroundColor: '#F6F8FF',
+    shadowColor: '#3D50B5',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
   input: {
     flex: 1,
     height: 56,
@@ -118,6 +138,12 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'DMSans_400Regular',
     paddingVertical: 0,
+    ...Platform.select({
+      web: {
+        outlineWidth: 0,
+        outlineColor: 'transparent',
+      },
+    }),
   },
   unit: {
     fontSize: 16,

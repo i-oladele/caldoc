@@ -14,12 +14,15 @@
       "@components/*": ["./components/*"],
       "@data/*": ["./data/*"],
       "@context/*": ["./context/*"],
-      "@app/*": ["./app/*"]
+      "@app/*": ["./app/*"],
+      "@/app/calculator/config/categories/*": ["./app/calculator/config/categories/*"]
     }
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "app/calculator/**/*.ts",
+    "app/calculator/**/*.tsx"
   ],
   "exclude": [
     "node_modules"

@@ -11,61 +11,55 @@ export const CALCULATIONS: Calculation[] = [
     id: 'abi',
     name: 'Ankle-Brachial Index',
     description: 'Evaluates peripheral arterial disease by comparing ankle and arm blood pressures.',
-    category: 'Cardiology'
+    category: 'cardiology'
   },
   {
     id: 'cha2ds2',
     name: 'CHA2DS2 Score (without VASc)',
     description: 'Stroke risk assessment variant for atrial fibrillation patients.',
-    category: 'Cardiology'
+    category: 'cardiology'
   },
   {
     id: 'map',
     name: 'Mean Arterial Pressure (MAP)',
     description: 'Calculates average blood pressure during a cardiac cycle',
-    category: 'Cardiology'
+    category: 'cardiology'
   },
   {
     id: 'qtc',
     name: 'Corrected QT Interval',
     description: 'Adjusts QT interval for heart rate to assess cardiac repolarization.',
-    category: 'Cardiology'
+    category: 'cardiology'
   },
   {
     id: 'cardiac-output',
-    name: 'Cardiac Output (Fick method)',
-    description: 'Calculates cardiac output using oxygen consumption and oxygen content.',
-    category: 'Cardiology'
+    name: 'Cardiac Output (Fick)',
+    description: 'Calculates cardiac output using the Fick principle based on oxygen consumption and content.',
+    category: 'cardiology'
   },
   {
     id: 'cha2ds2-vasc',
     name: 'CHA2DS2-VASc Score',
     description: 'Assesses stroke risk in patients with atrial fibrillation.',
-    category: 'Cardiology'
+    category: 'cardiology'
   },
   {
     id: 'framingham',
     name: 'Cardiovascular Risk (Framingham Score)',
     description: 'Estimates 10-year cardiovascular risk based on various factors.',
-    category: 'Cardiology'
+    category: 'cardiology'
   },
   {
     id: 'friedewald',
     name: 'Friedewald Formula',
     description: 'Estimates LDL cholesterol level from lipid panel.',
-    category: 'Cardiology'
+    category: 'cardiology'
   },
   {
     id: 'reynolds-risk',
     name: 'Reynolds Risk Score',
     description: 'Another cardiovascular risk calculator including CRP and family history.',
-    category: 'Cardiology'
-  },
-  {
-    id: 'cardiac-output',
-    name: 'Cardiac Output (Fick Principle)',
-    description: 'Measures cardiac output based on oxygen consumption.',
-    category: 'Cardiology'
+    category: 'cardiology'
   },
 
   // Critical Care
@@ -73,37 +67,37 @@ export const CALCULATIONS: Calculation[] = [
     id: 'apache-ii',
     name: 'APACHE II Score',
     description: 'Predicts mortality in ICU patients based on physiological measurements.',
-    category: 'Critical Care'
+    category: 'critical-care'
   },
   {
     id: 'shock-index',
     name: 'Shock Index',
     description: 'A quick indicator of hemodynamic instability or shock using heart rate and systolic blood pressure.',
-    category: 'Critical Care'
+    category: 'critical-care'
   },
   {
     id: 'estimated-blood-loss',
     name: 'Estimated Blood Loss',
     description: 'Calculates estimated blood loss during surgery using changes in hematocrit.',
-    category: 'Critical Care'
+    category: 'critical-care'
   },
   {
     id: 'lactate-clearance',
     name: 'Lactate Clearance',
     description: 'Measures improvement or worsening in tissue oxygenation.',
-    category: 'Critical Care'
+    category: 'critical-care'
   },
   {
     id: 'shock-volume',
     name: 'Shock Volume Calculation',
     description: 'Calculates volume of fluids needed during shock resuscitation.',
-    category: 'Critical Care'
+    category: 'critical-care'
   },
   {
     id: 'sofa',
     name: 'SOFA Score',
     description: 'Assesses organ failure in septic patients.',
-    category: 'Critical Care'
+    category: 'critical-care'
   },
 
   //Gastroenterology
@@ -111,7 +105,7 @@ export const CALCULATIONS: Calculation[] = [
     id: 'glasgow-blatchford',
     name: 'Glasgow-Blatchford Score',
     description: 'Predicts need for intervention in upper gastrointestinal bleeding.',
-    category: 'Gastroenterology'
+    category: 'gastroenterology'
   },
 
   // General
@@ -119,25 +113,25 @@ export const CALCULATIONS: Calculation[] = [
     id: 'bmi',
     name: 'Body Mass Index (BMI)',
     description: 'Calculate BMI using weight and height',
-    category: 'General'
+    category: 'general'
   },
   {
     id: 'bsa',
     name: 'Body Surface Area (Mosteller formula)',
     description: 'Estimates the body surface area used for dosing medications and assessments.',
-    category: 'General'
+    category: 'general'
   },
   {
     id: 'ibw',
     name: 'Ideal Body Weight (Devine formula)',
     description: 'Estimates ideal body weight for dosing or nutritional assessment.',
-    category: 'General'
+    category: 'general'
   },
   {
     id: 'estimated-blood-volume',
     name: 'Estimated Blood Volume',
     description: 'Calculates estimated blood volume based on patient weight.',
-    category: 'General'
+    category: 'general'
   },
 
   // Hematology
@@ -145,19 +139,19 @@ export const CALCULATIONS: Calculation[] = [
     id: 'warfarin-dose',
     name: 'Warfarin Dose Adjustment',
     description: 'Adjusts warfarin dose based on INR and target range',
-    category: 'Hematology'
+    category: 'hematology'
   },
   {
     id: 'hematocrit',
     name: 'Hematocrit',
     description: 'Calculates hematocrit from RBC count and MCV.',
-    category: 'Hematology'
+    category: 'hematology'
   },
   {
     id: 'wells-dvt',
     name: 'Wells Score (for DVT)',
     description: 'Estimates probability of deep vein thrombosis.',
-    category: 'Hematology'
+    category: 'hematology'
   },
 
   //Hepatology
@@ -165,13 +159,13 @@ export const CALCULATIONS: Calculation[] = [
     id: 'child-pugh',
     name: 'Liver Function Score (Child-Pugh)',
     description: 'Predicts prognosis in liver cirrhosis patients.',
-    category: 'Hepatology'
+    category: 'hepatology'
   },
   {
     id: 'meld',
     name: 'MELD Score',
     description: 'Predicts mortality risk in patients with liver disease.',
-    category: 'Hepatology'
+    category: 'hepatology'
   },
 
   // Metabolism
@@ -179,37 +173,37 @@ export const CALCULATIONS: Calculation[] = [
     id: 'anion-gap',
     name: 'Anion Gap',
     description: 'Evaluates metabolic acidosis by measuring cation-anion difference',
-    category: 'Metabolism'
+    category: 'metabolism'
   },
   {
     id: 'corrected-anion-gap',
     name: 'Anion Gap Corrected for Albumin',
     description: 'More accurate metabolic acidosis evaluation adjusting for low albumin.',
-    category: 'Metabolism'
+    category: 'metabolism'
   },
   {
     id: 'corrected-calcium',
     name: 'Corrected Calcium',
     description: 'Adjusts serum calcium levels based on albumin concentration',
-    category: 'Metabolism'
+    category: 'metabolism'
   },
   {
     id: 'ldl',
     name: 'LDL Cholesterol',
     description: 'Calculates LDL cholesterol using the Friedewald equation.',
-    category: 'Metabolism'
+    category: 'metabolism'
   },
   {
     id: 'serum-osmolality',
     name: 'Serum Osmolality',
     description: 'Estimates serum osmolality from sodium, glucose, and BUN.',
-    category: 'Metabolism'
+    category: 'metabolism'
   },
   {
     id: 'transferrin-saturation',
     name: 'Transferrin Saturation',
     description: 'Calculates transferrin saturation from serum iron and TIBC.',
-    category: 'Metabolism'
+    category: 'metabolism'
   },
 
   // Nephrology

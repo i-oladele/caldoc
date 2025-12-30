@@ -87,68 +87,70 @@ export default function CalculatorScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <ThemedText style={styles.title}>{calculator?.name}</ThemedText>
-          <ThemedText style={styles.subtitle}>{calculator?.description}</ThemedText>
-          
-          {/* Tabs */}
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity 
-              style={[styles.tab, activeTab === 'calculator' && styles.activeTab]}
-              onPress={() => setActiveTab('calculator')}
-            >
-              <ThemedText style={[styles.tabText, activeTab === 'calculator' && styles.activeTabText]}>
-                Calculator
-              </ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.tab, activeTab === 'facts' && styles.activeTab]}
-              onPress={() => setActiveTab('facts')}
-            >
-              <ThemedText style={[styles.tabText, activeTab === 'facts' && styles.activeTabText]}>
-                Facts
-              </ThemedText>
-            </TouchableOpacity>
+        <View style={styles.contentWrapper}>
+          <View style={styles.header}>
+            <ThemedText style={styles.title}>{calculator?.name}</ThemedText>
+            <ThemedText style={styles.subtitle}>{calculator?.description}</ThemedText>
+            
+            {/* Tabs */}
+            <View style={styles.tabsContainer}>
+              <TouchableOpacity 
+                style={[styles.tab, activeTab === 'calculator' && styles.activeTab]}
+                onPress={() => setActiveTab('calculator')}
+              >
+                <ThemedText style={[styles.tabText, activeTab === 'calculator' && styles.activeTabText]}>
+                  Calculator
+                </ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.tab, activeTab === 'facts' && styles.activeTab]}
+                onPress={() => setActiveTab('facts')}
+              >
+                <ThemedText style={[styles.tabText, activeTab === 'facts' && styles.activeTabText]}>
+                  Facts
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
 
-        {activeTab === 'calculator' ? (
-          <View style={styles.content}>
-            <CalculatorForm
-              fields={config.fields}
-              values={values}
-              onChange={handleValueChange}
-              onSubmit={handleCalculate}
-              onReset={handleReset}
-              error={error}
-            />
-            <CalculatorResult
-              result={result?.result || null}
-              interpretation={result?.interpretation || ''}
-              resultUnit={config.resultUnit}
-              error={error}
-            />
-          </View>
-        ) : (
-          <View style={styles.factsContainer}>
-            {config.formula && (
-              <View style={styles.section}>
-                <ThemedText style={styles.sectionTitle}>Formula</ThemedText>
-                <ThemedText style={styles.formulaText}>{config.formula}</ThemedText>
-              </View>
-            )}
-            {config.references && config.references.length > 0 && (
-              <View style={styles.section}>
-                <ThemedText style={styles.sectionTitle}>References</ThemedText>
-                {config.references.map((ref, index) => (
-                  <ThemedText key={index} style={styles.referenceText}>
-                    • {ref}
-                  </ThemedText>
-                ))}
-              </View>
-            )}
-          </View>
-        )}
+          {activeTab === 'calculator' ? (
+            <View style={styles.content}>
+              <CalculatorForm
+                fields={config.fields}
+                values={values}
+                onChange={handleValueChange}
+                onSubmit={handleCalculate}
+                onReset={handleReset}
+                error={error}
+              />
+              <CalculatorResult
+                result={result?.result || null}
+                interpretation={result?.interpretation || ''}
+                resultUnit={config.resultUnit}
+                error={error}
+              />
+            </View>
+          ) : (
+            <View style={styles.factsContainer}>
+              {config.formula && (
+                <View style={styles.section}>
+                  <ThemedText style={styles.sectionTitle}>Formula</ThemedText>
+                  <ThemedText style={styles.formulaText}>{config.formula}</ThemedText>
+                </View>
+              )}
+              {config.references && config.references.length > 0 && (
+                <View style={styles.section}>
+                  <ThemedText style={styles.sectionTitle}>References</ThemedText>
+                  {config.references.map((ref, index) => (
+                    <ThemedText key={index} style={styles.referenceText}>
+                      • {ref}
+                    </ThemedText>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -162,6 +164,12 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 24,
+  },
+  contentWrapper: {
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
+    paddingHorizontal: 24,
   },
   container: {
     flex: 1,

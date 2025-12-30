@@ -43,45 +43,47 @@ export default function FavoritesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText style={styles.title}>Favorites</ThemedText>
-      </View>
+      <View style={styles.contentWrapper}>
+        <View style={styles.header}>
+          <ThemedText style={styles.title}>Favorites</ThemedText>
+        </View>
 
-      <TouchableOpacity 
-        activeOpacity={1}
-        style={[
-          styles.searchContainer,
-          isSearchFocused && styles.searchContainerFocused
-        ]}
-        onPress={() => {
-          searchInputRef.current?.focus();
-        }}
-      >
-        <TextInput
-          ref={searchInputRef}
-          style={styles.searchInput}
-          placeholder="Search"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholderTextColor="#999"
-          onFocus={() => setIsSearchFocused(true)}
-          onBlur={() => setIsSearchFocused(false)}
-        />
-        {!isSearchFocused && (
-          <Search width={24} height={24} stroke="#7C7C7C" />
+        <TouchableOpacity 
+          activeOpacity={1}
+          style={[
+            styles.searchContainer,
+            isSearchFocused && styles.searchContainerFocused
+          ]}
+          onPress={() => {
+            searchInputRef.current?.focus();
+          }}
+        >
+          <TextInput
+            ref={searchInputRef}
+            style={styles.searchInput}
+            placeholder="Search"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor="#999"
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+          />
+          {!isSearchFocused && (
+            <Search width={24} height={24} stroke="#7C7C7C" />
+          )}
+        </TouchableOpacity>
+
+        {favoriteCalculations.length === 0 ? (
+          <ThemedText style={styles.emptyText}>No favorite calculations yet.</ThemedText>
+        ) : (
+          <FlatList<Calculation>
+            data={favoriteCalculations}
+            renderItem={renderCalculationItem}
+            keyExtractor={(item: Calculation) => item.id}
+            contentContainerStyle={styles.listContainer}
+          />
         )}
-      </TouchableOpacity>
-
-      {favoriteCalculations.length === 0 ? (
-        <ThemedText style={styles.emptyText}>No favorite calculations yet.</ThemedText>
-      ) : (
-        <FlatList<Calculation>
-          data={favoriteCalculations}
-          renderItem={renderCalculationItem}
-          keyExtractor={(item: Calculation) => item.id}
-          contentContainerStyle={styles.listContainer}
-        />
-      )}
+      </View>
     </View>
   );
 }
@@ -91,8 +93,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+  },
   header: {
-    padding: 16,
+    paddingVertical: 16,
     paddingTop: 60,
     backgroundColor: '#FFFFFF',
   },
@@ -105,7 +114,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F4F4F4',
-    margin: 16,
+    marginVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 8,
     height: 50,
@@ -133,7 +142,8 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   listContainer: {
-    padding: 16,
+    paddingHorizontal: 0,
+    paddingBottom: 32,
   },
   calculationItem: {
     flexDirection: 'row',
