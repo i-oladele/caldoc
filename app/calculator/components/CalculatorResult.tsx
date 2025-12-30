@@ -1,21 +1,46 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { CalculationStatus } from '@/app/calculator/config/calculator';
 import { ThemedText } from '@/components/ThemedText';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
 interface CalculatorResultProps {
   result: number | null;
   interpretation: string;
   resultUnit: string;
   error?: string | null;
-  formula?: string;
+  status?: CalculationStatus;
 }
+
+const STATUS_STYLES = {
+  success: {
+    container: {
+      backgroundColor: '#F0FDF4',
+      borderColor: '#86EFAC',
+    },
+    value: '#15803D',
+  },
+  warning: {
+    container: {
+      backgroundColor: '#FFFBEB',
+      borderColor: '#FDE68A',
+    },
+    value: '#B45309',
+  },
+  danger: {
+    container: {
+      backgroundColor: '#FEF2F2',
+      borderColor: '#FCA5A5',
+    },
+    value: '#B91C1C',
+  },
+} as const;
 
 export const CalculatorResult: React.FC<CalculatorResultProps> = ({
   result,
   interpretation,
   resultUnit,
   error,
-  formula = '1 kilogram = 2.20462 pounds',
+  status,
 }) => {
   if (error) {
     return (
@@ -25,12 +50,15 @@ export const CalculatorResult: React.FC<CalculatorResultProps> = ({
     );
   }
 
+  const statusStyles = status ? STATUS_STYLES[status] : null;
+  const interpretationLines = interpretation ? interpretation.split('\n') : [];
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, statusStyles?.container]}>
       <View style={styles.resultSection}>
         <ThemedText style={styles.sectionTitle}>Result</ThemedText>
         <View style={styles.resultValueContainer}>
-          <ThemedText style={styles.resultValue}>
+          <ThemedText style={[styles.resultValue, statusStyles && { color: statusStyles.value }]}>
             {result !== null ? result.toFixed(2) : '--'}
           </ThemedText>
           <ThemedText style={styles.resultUnit}>{resultUnit}</ThemedText>
@@ -39,7 +67,21 @@ export const CalculatorResult: React.FC<CalculatorResultProps> = ({
       
       {interpretation && (
         <View style={styles.interpretationSection}>
-          <ThemedText style={styles.interpretationText}>{interpretation}</ThemedText>
+          {interpretationLines.map((line, index) => {
+            if (!line.trim()) {
+              return <View key={`line-${index}`} style={styles.interpretationSpacer} />;
+            }
+
+            const isProbabilityLine = line.toLowerCase().startsWith('probability of appendicitis');
+            return (
+              <ThemedText
+                key={`line-${index}`}
+                style={[styles.interpretationText, isProbabilityLine && styles.interpretationTextBold]}
+              >
+                {line}
+              </ThemedText>
+            );
+          })}
         </View>
       )}
     </View>
@@ -50,6 +92,8 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     margin: 16,
     marginHorizontal: 8,
     padding: 24,
@@ -111,5 +155,11 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     fontFamily: 'DMSans_400Regular',
     marginTop: 2,
+  },
+  interpretationTextBold: {
+    fontFamily: 'DMSans_700Bold',
+  },
+  interpretationSpacer: {
+    height: 8,
   },
 });

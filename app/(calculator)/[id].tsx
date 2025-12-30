@@ -1,11 +1,11 @@
 import { CalculatorForm } from '@/app/calculator/components/CalculatorForm';
 import { CalculatorResult } from '@/app/calculator/components/CalculatorResult';
 import { loadCalculatorConfig } from '@/app/calculator/config';
-import { CalculatorConfig } from '@/app/calculator/config/calculator';
+import { CalculationResult, CalculatorConfig, CalculatorValues } from '@/app/calculator/config/calculator';
 import { ThemedText } from '@/components/ThemedText';
 import { CALCULATIONS } from '@/data/calculations';
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 type Tab = 'calculator' | 'facts';
@@ -18,8 +18,15 @@ export default function CalculatorScreen() {
   const [config, setConfig] = useState<CalculatorConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [values, setValues] = useState<{ [key: string]: string }>({});
-  const [result, setResult] = useState<{ result: number; interpretation: string } | null>(null);
+  const [values, setValues] = useState<CalculatorValues>({});
+  const [result, setResult] = useState<CalculationResult | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const scrollToResult = () => {
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    });
+  };
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -61,20 +68,24 @@ export default function CalculatorScreen() {
     try {
       const validationErrors = config.validate(values);
       if (validationErrors) {
-        // If there are validation errors, get the first error message
+        if (typeof validationErrors === 'string') {
+          throw new Error(validationErrors);
+        }
+
         const firstErrorKey = Object.keys(validationErrors)[0];
         throw new Error(validationErrors[firstErrorKey]);
       }
       const calculationResult = config.calculate(values);
       setResult(calculationResult);
       setError(null);
+      scrollToResult();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during calculation');
       setResult(null);
     }
   };
 
-  const handleValueChange = (field: string, value: string) => {
+  const handleValueChange = (field: string, value: string | boolean) => {
     setValues(prev => ({ ...prev, [field]: value }));
   };
 
@@ -86,7 +97,7 @@ export default function CalculatorScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollContent}>
         <View style={styles.contentWrapper}>
           <View style={styles.header}>
             <ThemedText style={styles.title}>{calculator?.name}</ThemedText>
@@ -128,6 +139,7 @@ export default function CalculatorScreen() {
                 interpretation={result?.interpretation || ''}
                 resultUnit={config.resultUnit}
                 error={error}
+                status={result?.status}
               />
             </View>
           ) : (

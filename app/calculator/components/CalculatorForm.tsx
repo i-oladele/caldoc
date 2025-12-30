@@ -1,12 +1,12 @@
 import { ThemedText } from '@/components/ThemedText';
 import React, { useState } from 'react';
-import { Platform, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
-import { InputField } from '../config/calculator';
+import { Platform, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { CalculatorValues, InputField } from '../config/calculator';
 
 interface CalculatorFormProps {
   fields: InputField[];
-  values: { [key: string]: string };
-  onChange: (field: string, value: string) => void;
+  values: CalculatorValues;
+  onChange: (field: string, value: string | boolean) => void;
   error?: string | null;
   onSubmit: () => void;
   onReset: () => void;
@@ -21,6 +21,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   onReset,
 }) => {
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [isSubmitHovered, setIsSubmitHovered] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -32,39 +33,63 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
       </View>
       {fields.map((field) => {
         const fieldKey = field.id || field.label;
+        const fieldType = field.type || 'number';
+        const fieldValue = values[fieldKey];
         const isFocused = focusedField === fieldKey;
 
+        if (fieldType === 'checkbox') {
+          const checked = Boolean(fieldValue);
+          return (
+            <TouchableOpacity
+              key={fieldKey}
+              style={[styles.checkboxContainer, checked && styles.checkboxContainerChecked]}
+              onPress={() => onChange(fieldKey, !checked)}
+              activeOpacity={0.85}
+            >
+              <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+                {checked && <View style={styles.checkboxIndicator} />}
+              </View>
+              <ThemedText style={styles.checkboxLabel}>{field.label}</ThemedText>
+            </TouchableOpacity>
+          );
+        }
+
         return (
-          <View key={field.label} style={styles.inputContainer}>
+          <View key={fieldKey} style={styles.inputContainer}>
             <ThemedText style={styles.label}>{field.label}</ThemedText>
             <View style={[styles.inputWrapper, isFocused && styles.inputWrapperFocused]}>
               <TextInput
                 style={styles.input}
-                placeholder="0"
+                placeholder={field.placeholder || 'Enter value'}
                 placeholderTextColor="#999"
-                keyboardType="decimal-pad"
-                value={values[field.label] ?? ''}
-                onChangeText={(text) => onChange(field.label, text)}
+                keyboardType={field.keyboardType || 'decimal-pad'}
+                value={typeof fieldValue === 'string' ? fieldValue : ''}
+                onChangeText={(text) => onChange(fieldKey, text)}
                 onFocus={() => setFocusedField(fieldKey)}
                 onBlur={() => setFocusedField((prev) => (prev === fieldKey ? null : prev))}
                 underlineColorAndroid="transparent"
                 selectionColor="#3D50B5"
               />
-              <ThemedText style={styles.unit}>{field.unit}</ThemedText>
+              {field.unit ? <ThemedText style={styles.unit}>{field.unit}</ThemedText> : null}
             </View>
           </View>
         );
       })}
-      
 
-      
-      <TouchableOpacity 
-        style={styles.submitButton}
+      {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
+
+      <Pressable 
+        style={({ pressed }) => [
+          styles.submitButton,
+          isSubmitHovered && Platform.OS === 'web' && styles.submitButtonHover,
+          pressed && styles.submitButtonPressed,
+        ]}
         onPress={onSubmit}
-        activeOpacity={0.8}
+        onHoverIn={() => setIsSubmitHovered(true)}
+        onHoverOut={() => setIsSubmitHovered(false)}
       >
         <ThemedText style={styles.submitButtonText}>Calculate</ThemedText>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };
@@ -151,6 +176,46 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_400Regular',
     marginLeft: 8,
   },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  checkboxContainerChecked: {
+    borderColor: '#3D50B5',
+    backgroundColor: '#F6F8FF',
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#C4C4C4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  checkboxChecked: {
+    borderColor: '#3D50B5',
+    backgroundColor: '#3D50B5',
+  },
+  checkboxIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 2,
+    backgroundColor: '#FFFFFF',
+  },
+  checkboxLabel: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1A1A1A',
+    fontFamily: 'DMSans_500Medium',
+  },
   error: {
     color: '#FF3B30',
     fontSize: 14,
@@ -164,6 +229,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
+  },
+  submitButtonHover: {
+    backgroundColor: '#3444A3',
+    transform: [{ translateY: -1 }],
+    shadowColor: '#3D50B5',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  submitButtonPressed: {
+    backgroundColor: '#2D3A8D',
+    transform: [{ scale: 0.98 }],
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   submitButtonText: {
     color: '#fff',

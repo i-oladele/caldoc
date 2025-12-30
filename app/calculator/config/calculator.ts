@@ -13,14 +13,24 @@ export interface InputField {
   value?: string;
 }
 
+export type CalculatorValues = Record<string, string | boolean>;
+
+export type CalculationStatus = 'success' | 'warning' | 'danger';
+
+export interface CalculationResult {
+  result: number;
+  interpretation: string;
+  status?: CalculationStatus;
+}
+
 export interface CalculatorConfig {
   id: string;
   name: string;
   description: string;
   category: string;
   fields: InputField[];
-  validate: (values: { [key: string]: string }) => Record<string, string> | null;
-  calculate: (values: { [key: string]: string }) => { result: number; interpretation: string };
+  validate: (values: CalculatorValues) => Record<string, string> | string | null;
+  calculate: (values: CalculatorValues) => CalculationResult;
   formula?: string;
   references?: string[];
   resultUnit: string;

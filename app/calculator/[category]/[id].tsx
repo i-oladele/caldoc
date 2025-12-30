@@ -1,8 +1,9 @@
 import { CalculatorForm } from '@/app/calculator/components/CalculatorForm';
 import { CalculatorResult } from '@/app/calculator/components/CalculatorResult';
+import { CalculationResult, CalculatorValues } from '@/app/calculator/config/calculator';
 import { ThemedText } from '@/components/ThemedText';
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 type Tab = 'calculator' | 'facts';
@@ -13,8 +14,15 @@ export default function CalculatorScreen() {
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [values, setValues] = useState<{ [key: string]: string }>({});
-  const [result, setResult] = useState<{ result: number; interpretation: string } | null>(null);
+  const [values, setValues] = useState<CalculatorValues>({});
+  const [result, setResult] = useState<CalculationResult | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const scrollToResult = () => {
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    });
+  };
 
   useEffect(() => {
     const loadCalculator = async () => {
@@ -204,7 +212,7 @@ export default function CalculatorScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollContent}>
         <View style={styles.contentWrapper}>
           <View style={styles.header}>
             <ThemedText style={styles.title}>{config.name}</ThemedText>
@@ -239,8 +247,21 @@ export default function CalculatorScreen() {
                 onReset={() => setValues({})}
                 onSubmit={() => {
                   try {
-                    const result = config.calculate(values);
-                    setResult(result);
+                    const validationErrors = config.validate(values);
+                    if (validationErrors) {
+                      if (typeof validationErrors === 'string') {
+                        setError(validationErrors);
+                      } else {
+                        const firstErrorKey = Object.keys(validationErrors)[0];
+                        setError(validationErrors[firstErrorKey]);
+                      }
+                      setResult(null);
+                      return;
+                    }
+                    const calculationResult = config.calculate(values);
+                    setResult(calculationResult);
+                    setError(null);
+                    scrollToResult();
                   } catch (err) {
                     setError(`Calculation error: ${err instanceof Error ? err.message : 'Unknown error'}`);
                   }
@@ -252,7 +273,7 @@ export default function CalculatorScreen() {
                   interpretation={result.interpretation} 
                   resultUnit={config.resultUnit}
                   error={error}
-                  formula={config.formula}
+                  status={result.status}
                 />
               )}
             </View>

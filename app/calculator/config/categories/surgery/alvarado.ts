@@ -1,4 +1,4 @@
-import { CalculatorConfig } from '@/app/calculator/config/calculator';
+import { CalculationStatus, CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const alvaradoConfig: CalculatorConfig = {
   id: 'alvarado',
@@ -80,30 +80,34 @@ export const alvaradoConfig: CalculatorConfig = {
   },
   calculate: (values: { [key: string]: string | boolean }) => {
     // Calculate score (1 point for each positive finding)
-    const score = [
-      values.migratoryPain,
-      values.anorexia,
-      values.nauseaVomiting,
-      values.tendernessRLQ,
-      values.reboundTenderness,
-      values.elevatedTemp,
-      values.leukocytosis,
-      values.leftShift
-    ].filter(Boolean).length;
+    const score =
+      (values.migratoryPain ? 1 : 0) +
+      (values.anorexia ? 1 : 0) +
+      (values.nauseaVomiting ? 1 : 0) +
+      (values.tendernessRLQ ? 2 : 0) +
+      (values.reboundTenderness ? 1 : 0) +
+      (values.elevatedTemp ? 1 : 0) +
+      (values.leukocytosis ? 2 : 0) +
+      (values.leftShift ? 1 : 0);
 
     // Determine likelihood of appendicitis
     let probability = '';
     let recommendation = '';
     
+    let status: CalculationStatus = 'success';
+
     if (score <= 4) {
       probability = 'Low probability (≈15% risk)';
       recommendation = 'Consider alternative diagnoses. Observation or further imaging may be appropriate.';
+      status = 'success';
     } else if (score <= 6) {
       probability = 'Moderate probability (≈40-50% risk)';
       recommendation = 'Consider imaging (ultrasound or CT) to confirm diagnosis.';
+      status = 'warning';
     } else {
       probability = 'High probability (≈85-95% risk)';
       recommendation = 'Surgical consultation recommended. Consider appendectomy.';
+      status = 'danger';
     }
     
     // Additional clinical notes
@@ -119,7 +123,8 @@ export const alvaradoConfig: CalculatorConfig = {
       interpretation: `Alvarado Score: ${score}/10\n` +
                      `Probability of Appendicitis: ${probability}\n\n` +
                      `Recommendation: ${recommendation}\n\n` +
-                     `Clinical Notes:\n${notes}`
+                     `Clinical Notes:\n${notes}`,
+      status,
     };
   },
   formula: 'Alvarado Score Components (1 point each):\n\n' +
@@ -128,11 +133,11 @@ export const alvaradoConfig: CalculatorConfig = {
            '• Anorexia\n' +
            '• Nausea/Vomiting\n\n' +
            'Signs:\n' +
-           '• Tenderness in RLQ\n' +
+           '• Tenderness in RLQ (2 points)\n' +
            '• Rebound tenderness\n' +
            '• Temperature > 37.3°C (99.1°F)\n\n' +
            'Lab:\n' +
-           '• Leukocytosis > 10,000/μL\n' +
+           '• Leukocytosis > 10,000/μL (2 points)\n' +
            '• Left shift (>75% neutrophils)\n\n' +
            'Scoring:\n' +
            '• 5-6: Moderate probability (consider imaging)\n' +
