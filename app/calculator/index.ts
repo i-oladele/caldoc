@@ -1,1 +1,1 @@
-export * from './config';
+export * from '@/app/lib/calculator/loadConfig';
