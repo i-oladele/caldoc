@@ -1,7 +1,7 @@
 import { CalculatorForm } from '@/app/calculator/components/CalculatorForm';
 import { CalculatorResult } from '@/app/calculator/components/CalculatorResult';
+import { loadCalculatorConfig } from '@/app/calculator/config';
 import { CalculationResult, CalculatorConfig, CalculatorValues } from '@/app/calculator/config/calculator';
-import { loadCalculatorConfig } from '@/app/lib/calculator/loadConfig';
 import { ThemedText } from '@/components/ThemedText';
 import { CALCULATIONS } from '@/data/calculations';
 import { useLocalSearchParams } from 'expo-router';
