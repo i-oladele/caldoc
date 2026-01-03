@@ -1,5 +1,5 @@
-import { CalculatorConfig } from './calculator';
 import { CALCULATIONS } from '@/data/calculations';
+import { CalculatorConfig } from './calculator';
 import * as Calculators from './categories';
 
 // Define the type for the calculators object
@@ -18,6 +18,7 @@ const CALCULATOR_EXPORTS: { [key: string]: string } = {
   'anion-gap': 'anionGapConfig',
   'warfarin-dose': 'warfarinDoseConfig',
   'ldl': 'ldlConfig',
+  'ahi': 'ahiConfig',
   'serum-osmolality': 'serumOsmolalityConfig',
   'hematocrit': 'hematocritConfig',
   'transferrin-saturation': 'transferrinSaturationConfig',

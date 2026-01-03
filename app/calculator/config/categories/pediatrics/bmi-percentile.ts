@@ -1,4 +1,4 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const bmiPercentileConfig: CalculatorConfig = {
   id: 'bmi-percentile',
@@ -72,29 +72,57 @@ export const bmiPercentileConfig: CalculatorConfig = {
     // Note: In a real implementation, you would look up the BMI percentile
     // from CDC growth charts based on age, sex, and calculated BMI
     // This is a simplified example
-    const percentile = Math.min(99, Math.max(1, Math.round(bmi * 10) / 10));
+    const percentile = Math.min(99.9, Math.max(0.1, Math.round(bmi * 10) / 10));
     
     let interpretation = '';
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    
     if (percentile < 5) {
-      interpretation = 'Underweight';
+      interpretation = `Underweight (${percentile.toFixed(1)}th percentile)`;
+      status = 'warning'; // Yellow for underweight
     } else if (percentile < 85) {
-      interpretation = 'Healthy weight';
+      interpretation = `Healthy weight (${percentile.toFixed(1)}th percentile)`;
+      status = 'success'; // Green for healthy weight
     } else if (percentile < 95) {
-      interpretation = 'Overweight';
+      interpretation = `Overweight (${percentile.toFixed(1)}th percentile)`;
+      status = 'warning'; // Yellow for overweight
     } else {
-      interpretation = 'Obese';
+      interpretation = `Obese (${percentile.toFixed(1)}th percentile)`;
+      status = 'danger'; // Red for obese
+    }
+    
+    // Add more detailed interpretation
+    interpretation += '\n\n';
+    if (percentile < 5) {
+      interpretation += 'Below the 5th percentile for age and sex. Consider nutritional assessment and monitoring.';
+    } else if (percentile < 85) {
+      interpretation += 'Between the 5th and 85th percentiles for age and sex. This is considered a healthy weight range.';
+    } else if (percentile < 95) {
+      interpretation += 'Between the 85th and 95th percentiles for age and sex. Consider lifestyle modifications and monitoring.';
+    } else {
+      interpretation += 'At or above the 95th percentile for age and sex. Consider comprehensive lifestyle intervention and medical evaluation.';
     }
     
     return {
       result: parseFloat(percentile.toFixed(1)),
+      status,
       interpretation
     };
   },
-  formula: 'BMI = weight (kg) / (height (m) × height (m))',
+  formula: 'BMI = weight (kg) / (height (m) × height (m))\n\n' +
+           'Percentile Categories:\n' +
+           '• Underweight: <5th percentile\n' +
+           '• Healthy weight: 5th to <85th percentile\n' +
+           '• Overweight: 85th to <95th percentile\n' +
+           '• Obese: ≥95th percentile\n\n' +
+           'Color Coding:\n' +
+           '• Green: Healthy weight\n' +
+           '• Yellow: Underweight or Overweight\n' +
+           '• Red: Obese',
   references: [
     'CDC Growth Charts: United States',
     'WHO Child Growth Standards',
-    'Pediatric Clinical Practice Guidelines for BMI'
+    'American Academy of Pediatrics Clinical Guidelines on Childhood Obesity'
   ],
   resultUnit: 'percentile'
 };

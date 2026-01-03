@@ -11,8 +11,8 @@ import Search from '../../assets/svg/Search.svg';
 
 interface Calculation {
   id: string;
-  name: string;
-  description: string;
+  name?: string;        // Make name optional
+  description?: string; // Make description optional
   category: string;
 }
 
@@ -23,12 +23,40 @@ export default function HomeScreen() {
   const { toggleFavorite, isFavorite } = useFavorites();
   const searchInputRef = useRef<TextInput>(null);
 
-  const filteredCalculations = CALCULATIONS
-    .filter(calc =>
-      calc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      calc.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const validCalculations = CALCULATIONS.filter(calc => {
+    if (!calc || typeof calc.id !== 'string' || typeof calc.category !== 'string') {
+      console.warn('Invalid calculation object found:', calc);
+      return false;
+    }
+    return true;
+  });
+
+  const filteredCalculations = validCalculations
+    .filter(calc => {
+      try {
+        const name = String(calc?.name || '');
+        const description = String(calc?.description || '');
+        const query = String(searchQuery || '').toLowerCase();
+        
+        return (
+          name.toLowerCase().includes(query) ||
+          description.toLowerCase().includes(query)
+        );
+      } catch (error) {
+        console.error('Error filtering calculation:', calc, error);
+        return false;
+      }
+    })
+    .sort((a, b) => {
+      try {
+        const nameA = String(a?.name || '');
+        const nameB = String(b?.name || '');
+        return nameA.localeCompare(nameB);
+      } catch (error) {
+        console.error('Error sorting calculations:', error);
+        return 0;
+      }
+    });
 
   const displayedCalculations =
     activeTab === 'home'
@@ -40,7 +68,7 @@ export default function HomeScreen() {
     
     return (
       <View style={styles.calculationItem}>
-        <Link href={`/calculator/${item.category}/${item.id}`} asChild>
+        <Link href={`/calculator/${item.category.toLowerCase()}/${item.id}`} asChild>
           <TouchableOpacity style={styles.calculationContent}>
             <ThemedText style={styles.calculationName}>{item.name}</ThemedText>
             <ThemedText style={styles.calculationDescription}>{item.description}</ThemedText>

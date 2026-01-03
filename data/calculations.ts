@@ -64,10 +64,6 @@ export const CALCULATIONS: Calculation[] = [
 
   // Critical Care
   {
-    id: 'apache-ii',
-    name: 'APACHE II Score',
-    description: 'Predicts mortality in ICU patients based on physiological measurements.',
-    category: 'critical-care'
   },
   {
     id: 'shock-index',
@@ -254,25 +250,25 @@ export const CALCULATIONS: Calculation[] = [
     id: 'child-dose',
     name: 'Pediatric Dose Calculator',
     description: 'Calculates adjusted doses for pediatric patients',
-    category: 'Pediatrics'
+    category: 'pediatrics'
   },
   {
     id: 'apgar',
     name: 'APGAR Score',
     description: 'Evaluates the health of newborns based on appearance, pulse, grimace, activity, and respiration.',
-    category: 'Pediatrics'
+    category: 'pediatrics'
   },
   {
     id: 'bmi-percentile',
     name: 'BMI Percentile (for children)',
     description: 'Compares BMI relative to peers of the same age and sex.',
-    category: 'Pediatrics'
+    category: 'pediatrics'
   },
   {
     id: 'pediatric-gcs',
     name: 'Pediatric Glasgow Coma Scale',
     description: 'Modified GCS adapted for children.',
-    category: 'Pediatrics'
+    category: 'pediatrics'
   },
 
    // Pharmacology
@@ -294,31 +290,31 @@ export const CALCULATIONS: Calculation[] = [
     id: 'ahi',
     name: 'Apnea-Hypopnea Index',
     description: 'Quantifies severity of sleep apnea episodes per hour.',
-    category: 'Respiratory'
+    category: 'respiratory'
   },
   {
     id: 'alveolar-gas',
     name: 'Alveolar Gas Equation',
-    description: 'Estimates alveolar oxygen pressure for assessing gas exchange efficiency in the lungs.',
-    category: 'Respiratory'
+    description: 'Calculates the partial pressure of oxygen in the alveoli (PAO₂).',
+    category: 'respiratory'
   },
   {
     id: 'blood-oxygen',
     name: 'Oxygen Content of Blood',
     description: 'Calculates total oxygen carried in blood by hemoglobin and dissolved oxygen.',
-    category: 'Respiratory'
+    category: 'respiratory'
   },
   {
     id: 'curb-65',
     name: 'CURB-65 Score',
     description: 'Assesses severity and need for hospitalization in community-acquired pneumonia.',
-    category: 'Respiratory'
+    category: 'respiratory'
   },
   {
     id: 'oxygenation-index',
     name: 'Oxygenation Index',
     description: 'Measures severity of hypoxic respiratory failure in ventilated patients.',
-    category: 'Respiratory'
+    category: 'respiratory'
   },
   {
     id: 'tidal-volume',

@@ -80,19 +80,31 @@ export const correctedAnionGapConfig: CalculatorConfig = {
     // Corrected anion gap
     const correctedAnionGap = anionGap + correctionFactor;
     
-    // Interpretation
+    // Interpretation with status
     let interpretation = '';
-    if (correctedAnionGap > 12) {
-      interpretation = 'Elevated anion gap metabolic acidosis';
-    } else if (correctedAnionGap > 6) {
-      interpretation = 'Normal anion gap';
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    
+    if (correctedAnionGap > 16) {
+      interpretation = 'Markedly Elevated Corrected Anion Gap - Suggests significant metabolic acidosis';
+      status = 'danger';
+    } else if (correctedAnionGap > 12) {
+      interpretation = 'Elevated Corrected Anion Gap - Metabolic acidosis present';
+      status = 'warning';
+    } else if (correctedAnionGap >= 8) {
+      interpretation = 'Normal Corrected Anion Gap - No significant acid-base disturbance detected';
+      status = 'success';
+    } else if (correctedAnionGap > 4) {
+      interpretation = 'Low Normal Corrected Anion Gap - Consider hypoalbuminemia';
+      status = 'warning';
     } else {
-      interpretation = 'Low anion gap (consider hypoalbuminemia, hypercalcemia, or other conditions)';
+      interpretation = 'Low Corrected Anion Gap - Consider hypoalbuminemia, hypercalcemia, or other conditions';
+      status = 'warning';
     }
     
     return {
       result: parseFloat(correctedAnionGap.toFixed(1)),
-      interpretation: `Corrected Anion Gap: ${correctedAnionGap.toFixed(1)} mEq/L - ${interpretation}`
+      interpretation: `Corrected Anion Gap: ${correctedAnionGap.toFixed(1)} mEq/L\n${interpretation}`,
+      status
     };
   },
   formula: 'Corrected Anion Gap = (Na⁺ - Cl⁻ - HCO₃⁻) + 2.5 × (4.4 - [Albumin])',

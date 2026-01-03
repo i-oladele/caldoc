@@ -37,6 +37,32 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
         const fieldValue = values[fieldKey];
         const isFocused = focusedField === fieldKey;
 
+        if (fieldType === 'select' && field.options) {
+          return (
+            <View key={fieldKey} style={styles.inputContainer}>
+              <ThemedText style={styles.label}>{field.label}</ThemedText>
+              <View style={[styles.selectContainer, isFocused && styles.inputWrapperFocused]}>
+                <select
+                  style={styles.select}
+                  value={fieldValue as string || ''}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
+                    onChange(fieldKey, e.currentTarget.value)
+                  }
+                  onFocus={() => setFocusedField(fieldKey)}
+                  onBlur={() => setFocusedField(null)}
+                >
+                  <option value="">{field.placeholder || 'Select an option'}</option>
+                  {field.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </View>
+            </View>
+          );
+        }
+
         if (fieldType === 'checkbox') {
           const checked = Boolean(fieldValue);
           return (
@@ -51,6 +77,32 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
               </View>
               <ThemedText style={styles.checkboxLabel}>{field.label}</ThemedText>
             </TouchableOpacity>
+          );
+        }
+
+        if (fieldType === 'radio' && field.options) {
+          return (
+            <View key={fieldKey} style={styles.radioGroupContainer}>
+              <ThemedText style={styles.label}>{field.label}</ThemedText>
+              <View style={styles.radioOptionsContainer}>
+                {field.options.map((option) => {
+                  const isSelected = values[fieldKey] === option.value;
+                  return (
+                    <TouchableOpacity
+                      key={`${fieldKey}-${option.value}`}
+                      style={[styles.radioOption, isSelected && styles.radioOptionSelected]}
+                      onPress={() => onChange(fieldKey, option.value)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.radioOuter}>
+                        {isSelected && <View style={styles.radioInner} />}
+                      </View>
+                      <ThemedText style={styles.radioLabel}>{option.label}</ThemedText>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
           );
         }
 
@@ -95,6 +147,23 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
 };
 
 const styles = StyleSheet.create({
+  selectContainer: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    marginBottom: 16,
+  },
+  select: {
+    width: '100%',
+    height: 44,
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    outlineWidth: 0,
+  } as any,
   container: {
     padding: 24,
     backgroundColor: '#fff',
@@ -249,6 +318,45 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: 'DMSans_600SemiBold',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  radioGroupContainer: {
+    marginBottom: 16,
+  },
+  radioOptionsContainer: {
+    marginTop: 8,
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  radioOptionSelected: {
+    backgroundColor: 'rgba(61, 80, 181, 0.1)',
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#3D50B5',
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#3D50B5',
+  },
+  radioLabel: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
   },
 });

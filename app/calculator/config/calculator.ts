@@ -3,7 +3,7 @@ export interface InputField {
   label: string;
   type: 'number' | 'select' | 'radio' | 'checkbox';
   placeholder?: string;
-  required?: boolean;
+  required?: boolean | string;
   options?: Array<{ label: string; value: string }>;
   min?: number;
   max?: number;

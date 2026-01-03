@@ -4,7 +4,7 @@ export const ahiConfig: CalculatorConfig = {
   id: 'ahi',
   name: 'Apnea-Hypopnea Index',
   description: 'Quantifies severity of sleep apnea episodes per hour.',
-  category: 'Respiratory',
+  category: 'respiratory',
   fields: [
     // Required inputs
     {
@@ -25,61 +25,9 @@ export const ahiConfig: CalculatorConfig = {
       keyboardType: 'decimal-pad',
       min: 0.1,
       step: 0.1
-    },
-    // Optional inputs for enhanced interpretation
-    {
-      id: 'patientAge',
-      type: 'number',
-      label: 'Patient Age',
-      placeholder: 'Enter age (years)',
-      unit: 'years',
-      keyboardType: 'number-pad',
-      min: 0,
-      max: 120,
-      required: false
-    },
-    {
-      id: 'sex',
-      type: 'select',
-      label: 'Sex',
-      placeholder: 'Select sex',
-      options: [
-        { label: 'Male', value: 'male' },
-        { label: 'Female', value: 'female' },
-        { label: 'Other/Prefer not to say', value: 'other' }
-      ],
-      required: false
-    },
-    {
-      id: 'bmi',
-      type: 'number',
-      label: 'BMI',
-      placeholder: 'Enter BMI (optional)',
-      unit: 'kg/m²',
-      keyboardType: 'decimal-pad',
-      min: 10,
-      max: 70,
-      step: 0.1,
-      required: false
-    },
-    {
-      id: 'symptoms',
-      type: 'checkbox',
-      label: 'Symptoms',
-      placeholder: 'Select all that apply',
-      options: [
-        { label: 'Excessive Daytime Sleepiness', value: 'sleepiness' },
-        { label: 'Loud Snoring', value: 'snoring' },
-        { label: 'Witnessed Apneas', value: 'apneas' },
-        { label: 'Morning Headaches', value: 'headaches' },
-        { label: 'Nocturia', value: 'nocturia' },
-        { label: 'Impaired Concentration', value: 'concentration' },
-        { label: 'Irritability', value: 'irritability' }
-      ],
-      required: false
     }
   ],
-  validate: (values: { [key: string]: string | boolean | number | undefined }) => {
+  validate: (values: { [key: string]: string | boolean | number | undefined }): Record<string, string> | null => {
     const errors: Record<string, string> = {};
 
     // Required fields
@@ -101,24 +49,9 @@ export const ahiConfig: CalculatorConfig = {
     if (values.sleepDuration) {
       const sleepDuration = parseFloat(values.sleepDuration as string);
       if (isNaN(sleepDuration) || sleepDuration <= 0) {
-        errors.sleepDuration = 'Sleep duration must be greater than 0 hours';
+        errors.sleepDuration = 'Sleep duration must be greater than 0';
       } else if (sleepDuration > 24) {
-        errors.sleepDuration = 'Sleep duration cannot exceed 24 hours';
-      }
-    }
-
-    // Validate optional fields if provided
-    if (values.patientAge) {
-      const age = parseInt(values.patientAge as string);
-      if (isNaN(age) || age < 0 || age > 120) {
-        errors.patientAge = 'Age must be between 0 and 120 years';
-      }
-    }
-
-    if (values.bmi) {
-      const bmi = parseFloat(values.bmi as string);
-      if (isNaN(bmi) || bmi < 10 || bmi > 70) {
-        errors.bmi = 'BMI must be between 10 and 70 kg/m²';
+        errors.sleepDuration = 'Sleep duration seems unusually long';
       }
     }
 
@@ -128,50 +61,40 @@ export const ahiConfig: CalculatorConfig = {
     // Parse input values
     const totalEvents = parseInt(values.totalEvents as string);
     const sleepDuration = parseFloat(values.sleepDuration as string);
-    const age = values.patientAge ? parseInt(values.patientAge as string) : 40; // Default to 40 if not provided
-    const sex = values.sex as string || 'male'; // Default to male if not provided
-    const bmi = values.bmi ? parseFloat(values.bmi as string) : 25; // Default to 25 if not provided
-    const symptoms = Array.isArray(values.symptoms) 
-      ? values.symptoms as string[]
-      : values.symptoms ? [values.symptoms.toString()] : [];
     
     // Calculate AHI (events per hour)
     const ahi = totalEvents / sleepDuration;
     
-    // Determine severity
+    // Determine severity and status for color coding
     let severity = '';
     let clinicalImplications = '';
     let treatmentRecommendations = '';
+    let status: 'success' | 'warning' | 'danger' = 'success';
     
     if (ahi < 5) {
       severity = 'Normal';
       clinicalImplications = 'No significant sleep-disordered breathing';
       treatmentRecommendations = 'No treatment needed for sleep apnea';
+      status = 'success'; // Green for normal
     } else if (ahi < 15) {
       severity = 'Mild';
       clinicalImplications = 'Mild sleep apnea';
       treatmentRecommendations = 'Lifestyle modifications, positional therapy, consider CPAP if symptomatic';
+      status = 'warning'; // Yellow for mild
     } else if (ahi < 30) {
       severity = 'Moderate';
       clinicalImplications = 'Moderate sleep apnea';
       treatmentRecommendations = 'CPAP therapy recommended, weight loss if overweight, avoid alcohol/sedatives';
+      status = 'danger'; // Red for moderate
     } else {
       severity = 'Severe';
       clinicalImplications = 'Severe sleep apnea';
       treatmentRecommendations = 'CPAP strongly recommended, consider ENT evaluation, weight management';
+      status = 'danger'; // Red for severe
     }
     
-    // Additional risk factors
-    const riskFactors = [];
-    if (bmi >= 30) riskFactors.push(`• BMI ≥30 (${bmi.toFixed(1)} kg/m²) - Major risk factor`);
-    if (age > 50) riskFactors.push(`• Age >50 years (${age} years)`);
-    if (sex === 'male') riskFactors.push('• Male sex (2-3x higher risk)');
-    if (symptoms.includes('snoring')) riskFactors.push('• Loud snoring (common symptom)');
-    if (symptoms.includes('apneas')) riskFactors.push('• Witnessed apneas (highly specific)');
-    
-    // Common symptoms
+    // Common symptoms of sleep apnea
     const commonSymptoms = [
-      'Common symptoms include:',
       '• Excessive daytime sleepiness',
       '• Loud snoring',
       '• Witnessed breathing pauses',
@@ -194,11 +117,11 @@ export const ahiConfig: CalculatorConfig = {
     
     return {
       result: ahi,
+      status,
       interpretation: `Apnea-Hypopnea Index (AHI): ${ahi.toFixed(1)} events/hour\n` +
                      `Severity: ${severity} Sleep Apnea\n` +
                      `Clinical Implications: ${clinicalImplications}\n\n` +
                      `Treatment Recommendations:\n${treatmentRecommendations}\n\n` +
-                     (riskFactors.length > 0 ? `Patient Risk Factors:\n${riskFactors.join('\n')}\n\n` : '') +
                      `Clinical Notes:\n${notes.join('\n')}\n\n` +
                      `Common Symptoms of Sleep Apnea:\n${commonSymptoms.join('\n')}`
     };

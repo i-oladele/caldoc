@@ -1,4 +1,4 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const anionGapConfig: CalculatorConfig = {
   id: 'anion-gap',
@@ -49,23 +49,32 @@ export const anionGapConfig: CalculatorConfig = {
     return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
-    const sodium = parseFloat(values.Sodium);
-    const chloride = parseFloat(values.Chloride);
-    const bicarbonate = parseFloat(values.Bicarbonate);
+    const sodium = parseFloat(values.sodium);
+    const chloride = parseFloat(values.chloride);
+    const bicarbonate = parseFloat(values.bicarbonate);
     const anionGap = sodium - (chloride + bicarbonate);
     
     let interpretation = '';
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    
     if (anionGap < 8) {
-      interpretation = 'Low Anion Gap';
+      interpretation = 'Low Anion Gap - Consider hypoalbuminemia, multiple myeloma, or other causes';
+      status = 'warning';
     } else if (anionGap <= 12) {
-      interpretation = 'Normal Anion Gap';
+      interpretation = 'Normal Anion Gap - No significant acid-base disturbance detected';
+      status = 'success';
+    } else if (anionGap <= 16) {
+      interpretation = 'Mildly Elevated Anion Gap - Possible early metabolic acidosis';
+      status = 'warning';
     } else {
-      interpretation = 'High Anion Gap';
+      interpretation = 'High Anion Gap - Suggests significant metabolic acidosis';
+      status = 'danger';
     }
     
     return {
       result: parseFloat(anionGap.toFixed(1)),
-      interpretation
+      interpretation,
+      status
     };
   },
   formula: 'Anion Gap = Sodium - (Chloride + Bicarbonate)',

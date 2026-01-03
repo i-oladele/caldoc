@@ -144,7 +144,7 @@ export default function CalculatorScreen() {
             require('@/app/calculator/config/categories/pharmacology/naranjo'),
           
           //Respiratory
-          'Respiratory/ahi': () => 
+          'respiratory/ahi': () => 
             require('@/app/calculator/config/categories/respiratory/ahi'),
           'Respiratory/alveolar-gas': () => 
             require('@/app/calculator/config/categories/respiratory/alveolar-gas'),

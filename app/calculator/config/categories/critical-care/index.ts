@@ -1,4 +1,3 @@
-export * from './apache-ii';
 export * from './estimated-blood-loss';
 export * from './lactate-clearance';
 export * from './shock-index';
