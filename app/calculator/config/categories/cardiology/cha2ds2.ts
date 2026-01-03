@@ -8,64 +8,47 @@ export const cha2ds2Config: CalculatorConfig = {
   fields: [
     {
       id: 'congestiveHF',
-      type: 'radio',
+      type: 'checkbox',
       label: 'Congestive Heart Failure',
-      options: [
-        { label: 'Yes', value: 'true' },
-        { label: 'No', value: 'false' }
-      ],
-      required: true
+      description: 'Clinical or echocardiographic evidence of heart failure'
     },
     {
       id: 'hypertension',
-      type: 'radio',
+      type: 'checkbox',
       label: 'Hypertension',
-      options: [
-        { label: 'Yes', value: 'true' },
-        { label: 'No', value: 'false' }
-      ],
-      required: true
+      description: 'History of hypertension or currently on antihypertensive medication'
     },
     {
       id: 'age',
       type: 'number',
-      label: 'Age',
-      placeholder: 'Enter age (years)',
+      label: 'Age (years)',
+      placeholder: 'Enter age',
       min: 0,
       max: 120,
       required: true
     },
     {
       id: 'diabetes',
-      type: 'radio',
+      type: 'checkbox',
       label: 'Diabetes',
-      options: [
-        { label: 'Yes', value: 'true' },
-        { label: 'No', value: 'false' }
-      ],
-      required: true
+      description: 'Fasting glucose >125 mg/dL or treatment with oral hypoglycemic agent and/or insulin'
     },
     {
       id: 'strokeTIA',
-      type: 'radio',
-      label: 'Stroke/TIA/Thromboembolism',
-      options: [
-        { label: 'Yes', value: 'true' },
-        { label: 'No', value: 'false' }
-      ],
-      required: true
+      type: 'checkbox',
+      label: 'Prior Stroke/TIA/Thromboembolism',
+      description: 'History of stroke, TIA, or systemic embolism (2 points)'
     }
   ],
   validate: (values) => {
-    const requiredFields = [
-      'congestiveHF', 'hypertension', 'age', 'diabetes', 'strokeTIA'
-    ];
+    // Only age is required as a number input
+    if (!values.age || values.age === '') {
+      return { age: 'Age is required' };
+    }
     
-    for (const field of requiredFields) {
-      if (values[field] === undefined || values[field] === '') {
-        const fieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
-        return `Please specify ${fieldName}`;
-      }
+    const age = Number(values.age);
+    if (isNaN(age) || age < 0 || age > 120) {
+      return { age: 'Please enter a valid age between 0 and 120' };
     }
     
     return null;
@@ -73,49 +56,56 @@ export const cha2ds2Config: CalculatorConfig = {
   calculate: (values) => {
     let score = 0;
     const riskFactors = [];
+    const age = Number(values.age);
     
     // C: Congestive heart failure (1 point)
-    if (values.congestiveHF === 'true') {
+    if (values.congestiveHF) {
       score += 1;
       riskFactors.push('Congestive heart failure');
     }
     
     // H: Hypertension (1 point)
-    if (values.hypertension === 'true') {
+    if (values.hypertension) {
       score += 1;
       riskFactors.push('Hypertension');
     }
     
     // A: Age ≥75 years (1 point)
-    const age = parseInt(values.age);
     if (age >= 75) {
       score += 1;
       riskFactors.push('Age ≥75 years');
     }
     
     // D: Diabetes (1 point)
-    if (values.diabetes === 'true') {
+    if (values.diabetes) {
       score += 1;
       riskFactors.push('Diabetes');
     }
     
     // S: Stroke/TIA/Thromboembolism (2 points)
-    if (values.strokeTIA === 'true') {
+    if (values.strokeTIA) {
       score += 2;
       riskFactors.push('Prior stroke/TIA/thromboembolism');
     }
     
-    // Determine risk level and recommendation
-    let riskLevel, recommendation;
+    // Determine risk level, recommendation, and status
+    let riskLevel, recommendation, status: 'success' | 'warning' | 'danger';
     if (score === 0) {
       riskLevel = 'Low';
+      status = 'success';
       recommendation = 'No antithrombotic therapy needed';
     } else if (score === 1) {
-      riskLevel = 'Moderate';
-      recommendation = 'Consider antithrombotic therapy (aspirin or oral anticoagulant)';
+      riskLevel = 'Low-Moderate';
+      status = 'warning';
+      recommendation = 'Consider antithrombotic therapy (aspirin or oral anticoagulation)';
+    } else if (score === 2) {
+      riskLevel = 'Moderate-High';
+      status = 'warning';
+      recommendation = 'Consider oral anticoagulation (warfarin or DOAC)';
     } else {
       riskLevel = 'High';
-      recommendation = 'Oral anticoagulation therapy recommended (e.g., warfarin, DOACs)';
+      status = 'danger';
+      recommendation = 'Oral anticoagulation recommended (warfarin or DOAC)';
     }
     
     // Calculate annual stroke risk percentage based on score
@@ -131,10 +121,11 @@ export const cha2ds2Config: CalculatorConfig = {
     
     return {
       result: score,
+      status,
       interpretation: `CHA2DS2 Score: ${score} (${riskLevel} risk)\nAnnual stroke risk: ~${strokeRisk}%\nRecommendation: ${recommendation}\n\nRisk factors: ${riskFactors.length > 0 ? riskFactors.join(', ') : 'None'}`
     };
   },
-  formula: 'CHA2DS2 Score Calculation:\n- C: Congestive heart failure (1 point)\n- H: Hypertension (1 point)\n- A: Age ≥75 years (1 point)\n- D: Diabetes (1 point)\n- S: Prior Stroke/TIA/Thromboembolism (2 points)',
+  formula: 'CHA2DS2 Score Calculation (0-6 points):\n- C: Congestive heart failure (1 point)\n- H: Hypertension (1 point)\n- A: Age ≥75 years (1 point)\n- D: Diabetes (1 point)\n- S: Prior Stroke/TIA/Thromboembolism (2 points)\n\nScore Interpretation:\n- 0: Low risk (0.2-0.3% annual stroke risk)\n- 1: Low-moderate risk (0.6-1.0% annual stroke risk)\n- 2: Moderate-high risk (1.9-2.9% annual stroke risk)\n- ≥3: High risk (3.2-14.2% annual stroke risk)',
   references: [
     'Gage BF, Waterman AD, Shannon W, et al. Validation of clinical classification schemes for predicting stroke: results from the National Registry of Atrial Fibrillation. JAMA. 2001;285(22):2864-2870.',
     'January CT, Wann LS, Calkins H, et al. 2019 AHA/ACC/HRS Focused Update of the 2014 AHA/ACC/HRS Guideline for the Management of Patients With Atrial Fibrillation. J Am Coll Cardiol. 2019;74(1):104-132.'

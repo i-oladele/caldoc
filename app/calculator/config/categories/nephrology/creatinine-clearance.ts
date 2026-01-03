@@ -1,4 +1,4 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const creatinineClearanceConfig: CalculatorConfig = {
   id: 'creatinine-clearance',
@@ -12,8 +12,8 @@ export const creatinineClearanceConfig: CalculatorConfig = {
       label: 'Age',
       placeholder: 'Enter age (years)',
       unit: 'years',
-      keyboardType: 'numeric',
-      min: 0,
+      keyboardType: 'number-pad',
+      min: 1,
       max: 120
     },
     {
@@ -29,10 +29,23 @@ export const creatinineClearanceConfig: CalculatorConfig = {
       id: 'creatinine',
       type: 'number',
       label: 'Serum Creatinine',
-      placeholder: 'Enter creatinine (mg/dL)',
+      placeholder: 'Enter creatinine value',
       unit: 'mg/dL',
       keyboardType: 'decimal-pad',
       min: 0
+    },
+    {
+      id: 'creatinineUnit',
+      type: 'select',
+      label: 'Creatinine Unit',
+      placeholder: 'Select unit',
+      unit: '',
+      keyboardType: 'default',
+      options: [
+        { label: 'mg/dL', value: 'mg/dL' },
+        { label: 'µmol/L', value: 'µmol/L' }
+      ],
+      defaultValue: 'mg/dL'
     },
     {
       id: 'gender',
@@ -47,36 +60,105 @@ export const creatinineClearanceConfig: CalculatorConfig = {
       ]
     }
   ],
-  validate: (values: { [key: string]: string }) => {
-    const errors: { [key: string]: string } = {};
-    const age = parseFloat(values.Age);
-    const weight = parseFloat(values.Weight);
-    const creatinine = parseFloat(values['Serum Creatinine']);
-    const gender = values.Gender?.toLowerCase();
+  validate: (values: Record<string, any>) => {
+    const errors: Record<string, string> = {};
     
-    if (isNaN(age) || age <= 0) {
-      errors['age'] = 'Age must be positive';
+    // Check if age exists and is a valid number
+    const ageValue = values.age;
+    if (ageValue === undefined || ageValue === null || ageValue === '') {
+      errors.age = 'Age is required';
+    } else {
+      // Convert to string and check if it's a valid integer
+      const ageStr = String(ageValue).trim();
+      if (ageStr === '') {
+        errors.age = 'Age is required';
+      } else if (!/^\d+$/.test(ageStr)) {
+        errors.age = 'Age must be a whole number';
+      } else {
+        const age = parseInt(ageStr, 10);
+        if (age < 1) {
+          errors.age = 'Age must be at least 1 year';
+        } else if (age > 120) {
+          errors.age = 'Age must be 120 or less';
+        }
+      }
     }
-    if (isNaN(weight) || weight <= 0) {
-      errors['weight'] = 'Weight must be positive';
+    
+    // Check weight
+    const weightValue = values.weight;
+    if (weightValue === undefined || weightValue === null || weightValue === '') {
+      errors.weight = 'Weight is required';
+    } else {
+      const weightStr = String(weightValue).trim();
+      if (weightStr === '') {
+        errors.weight = 'Weight is required';
+      } else {
+        const weight = parseFloat(weightStr);
+        if (isNaN(weight)) {
+          errors.weight = 'Weight must be a number';
+        } else if (weight <= 0) {
+          errors.weight = 'Weight must be positive';
+        } else if (weight > 300) {
+          errors.weight = 'Weight must be 300 kg or less';
+        }
+      }
     }
-    if (isNaN(creatinine) || creatinine <= 0) {
-      errors['creatinine'] = 'Creatinine must be positive';
+    
+    // Check creatinine
+    const creatinineValue = values.creatinine;
+    const creatinineUnit = values.creatinineUnit || 'mg/dL';
+    
+    if (creatinineValue === undefined || creatinineValue === null || creatinineValue === '') {
+      errors.creatinine = 'Creatinine is required';
+    } else {
+      const creatinineStr = String(creatinineValue).trim();
+      if (creatinineStr === '') {
+        errors.creatinine = 'Creatinine is required';
+      } else {
+        const creatinine = parseFloat(creatinineStr);
+        if (isNaN(creatinine)) {
+          errors.creatinine = 'Creatinine must be a number';
+        } else if (creatinine <= 0) {
+          errors.creatinine = 'Creatinine must be positive';
+        } else {
+          // Adjust max value based on unit
+          const maxValue = creatinineUnit === 'mg/dL' ? 30 : 3000; // 30 mg/dL = ~2652 µmol/L, rounded up
+          if (creatinine > maxValue) {
+            errors.creatinine = `Creatinine value seems too high for ${creatinineUnit}`;
+          }
+        }
+      }
     }
-    if (!gender || (gender !== 'male' && gender !== 'female')) {
-      errors['gender'] = 'Please select a valid gender';
+    
+    // Check gender
+    if (!values.gender || (values.gender as string).trim() === '') {
+      errors.gender = 'Please select a gender';
+    } else if (values.gender !== 'male' && values.gender !== 'female') {
+      errors.gender = 'Please select a valid gender';
     }
     return Object.keys(errors).length > 0 ? errors : null;
   },
-  calculate: (values: { [key: string]: string }) => {
-    const age = parseFloat(values.Age);
-    const weight = parseFloat(values.Weight);
-    const creatinine = parseFloat(values['Serum Creatinine']);
-    const gender = values.Gender.toLowerCase();
+  calculate: (values: Record<string, string | boolean>) => {
+    const age = parseFloat(values.age as string);
+    const weight = parseFloat(values.weight as string);
+    const creatinine = parseFloat(values.creatinine as string);
+    const creatinineUnit = (values.creatinineUnit || 'mg/dL') as string;
+    const gender = values.gender as string;
     
-    // Using the Cockcroft-Gault equation
-    const k = gender === 'male' ? 1.23 : 1.04;
-    const cc = (140 - age) * weight * k / (72 * creatinine);
+    let cc;
+    
+    if (creatinineUnit === 'µmol/L') {
+      // For µmol/L: CCr = (140 - age) × weight × k / SCr
+      // where k = 1.23 for males, 1.04 for females
+      const k = gender === 'male' ? 1.23 : 1.04;
+      cc = (140 - age) * weight * k / creatinine;
+    } else {
+      // For mg/dL: CCr = (140 - age) × weight / (72 × SCr) [× 0.85 if female]
+      cc = (140 - age) * weight / (72 * creatinine);
+      if (gender === 'female') {
+        cc *= 0.85;
+      }
+    }
     
     let interpretation = '';
     if (gender === 'male') {
@@ -98,11 +180,13 @@ export const creatinineClearanceConfig: CalculatorConfig = {
     }
     
     return {
-      result: parseFloat(cc.toFixed(1)),
-      interpretation
+      result: Math.round(cc * 100) / 100,
+      interpretation,
+      status: cc < 60 ? 'danger' : cc < 90 ? 'warning' : 'success',
+      resultUnit: 'mL/min'
     };
   },
-  formula: 'Cockcroft-Gault Equation:\nCC = (140 - Age) × Weight × k / (72 × Creatinine)\nwhere k = 1.23 for males, 1.04 for females',
+  formula: 'Cockcroft-Gault Equation:\nFor mg/dL:\n  Male: CCr = (140 - Age) × Weight / (72 × SCr)\n  Female: CCr = (140 - Age) × Weight × 0.85 / (72 × SCr)\n\nFor µmol/L:\n  Male: CCr = (140 - Age) × Weight × 1.23 / SCr\n  Female: CCr = (140 - Age) × Weight × 1.04 / SCr',
   references: [
     'Cockcroft DW, Gault MH. Prediction of creatinine clearance from serum creatinine.',
     'American Journal of Kidney Diseases. Creatinine Clearance Estimation.',

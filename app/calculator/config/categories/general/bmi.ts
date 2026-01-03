@@ -1,7 +1,11 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig, CalculatorValues } from '@/app/calculator/config/calculator';
 
 export const bmiConfig: CalculatorConfig = {
   id: 'bmi',
+  name: 'Body Mass Index (BMI)',
+  description: 'Calculates BMI based on weight and height to assess body fat.',
+  category: 'general',
+  resultUnit: 'kg/m²',
   fields: [
     {
       label: 'Weight',
@@ -16,7 +20,7 @@ export const bmiConfig: CalculatorConfig = {
       keyboardType: 'decimal-pad'
     }
   ],
-  validate: (values: { [key: string]: string }) => {
+  validate: (values: CalculatorValues) => {
     const weight = parseFloat(values['Weight']);
     const height = parseFloat(values['Height']);
     
@@ -28,25 +32,36 @@ export const bmiConfig: CalculatorConfig = {
     }
     return null;
   },
-  calculate: (values: { [key: string]: string }) => {
+  calculate: (values: CalculatorValues) => {
     const weight = parseFloat(values['Weight']);
     const height = parseFloat(values['Height']);
     const bmi = weight / ((height / 100) ** 2);
     
     let interpretation = '';
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    
     if (bmi < 18.5) {
       interpretation = 'Underweight';
-    } else if (bmi < 25) {
+      status = 'warning';  // Yellow for underweight
+    } else if (bmi < 23) {  // Normal range (18.5 - 22.9)
       interpretation = 'Normal weight';
-    } else if (bmi < 30) {
+      status = 'success';  // Green for normal
+    } else if (bmi < 25) {  // Borderline (23 - 24.9)
+      interpretation = 'Overweight (Borderline)';
+      status = 'warning';  // Yellow for borderline
+    } else if (bmi < 30) {  // Overweight (25 - 29.9)
       interpretation = 'Overweight';
-    } else {
+      status = 'danger';   // Red for overweight
+    } else {  // Obese (30+)
       interpretation = 'Obese';
+      status = 'danger';   // Red for obese
     }
     
     return {
-      result: parseFloat(bmi.toFixed(1)),
-      interpretation
+      result: bmi,
+      interpretation,
+      status,
+      resultUnit: 'kg/m²'
     };
   },
   formula: 'BMI = Weight (kg) / Height² (m²)',
@@ -54,8 +69,7 @@ export const bmiConfig: CalculatorConfig = {
     'World Health Organization. BMI Classification.',
     'Journal of the American Medical Association. BMI and Mortality.',
     'New England Journal of Medicine. Obesity and Health Outcomes.'
-  ],
-  resultUnit: ''
+  ]
 };
 
 export default bmiConfig;

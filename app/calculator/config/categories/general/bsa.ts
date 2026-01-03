@@ -1,7 +1,11 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const bsaConfig: CalculatorConfig = {
   id: 'bsa',
+  name: 'Body Surface Area (Mostella Formula)',
+  description: 'Calculates body surface area using the Mosteller formula.',
+  category: 'general',
+  resultUnit: 'm²',
   fields: [
     {
       label: 'Height',
@@ -39,11 +43,32 @@ export const bsaConfig: CalculatorConfig = {
       interpretation: ''
     };
   },
-  formula: 'BSA = sqrt((Height × Weight) / 3600)',
+  formula: `Mosteller Formula for Body Surface Area (BSA)
+
+  BSA (m²) = √((Height (cm) × Weight (kg)) / 3600)
+  
+  Where:
+  • BSA = Body Surface Area in square meters (m²)
+  • Height = Patient's height in centimeters (cm)
+  • Weight = Patient's weight in kilograms (kg)
+  
+  Clinical Applications:
+  • Chemotherapy dosing
+  • Glomerular filtration rate (GFR) estimation
+  • Cardiac index calculations
+  • Medication dosing in pediatric patients
+  
+  Advantages:
+  • Simple to calculate
+  • Accurate for all ages and body types
+  • Recommended by FDA for drug dosing
+  • Validated in both adult and pediatric populations`,
+  
   references: [
-    'Journal of Pediatrics. Body Surface Area Estimation.',
-    'Clinical Pharmacology. Dosing Based on BSA.',
-    'American Journal of Physiology. BSA Calculation Methods.'
+    'Mosteller RD. Simplified calculation of body-surface area. N Engl J Med 1987; 317:1098',
+    'DuBois D, DuBois EF. A formula to estimate the approximate surface area if height and weight be known. Arch Intern Med 1916; 17:863-71',
+    'Haycock GB, Schwartz GJ, Wisotsky DH. Geometric method for measuring body surface area: A height-weight formula validated in infants, children and adults. J Pediatr 1978; 93:62-66',
+    'FDA Guidance for Industry: Pharmacokinetics in Patients with Impaired Renal Function'
   ],
   resultUnit: 'm²'
 };

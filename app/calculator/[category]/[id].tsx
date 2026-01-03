@@ -13,9 +13,10 @@ export default function CalculatorScreen() {
   const [activeTab, setActiveTab] = useState<Tab>('calculator');
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [values, setValues] = useState<CalculatorValues>({});
   const [result, setResult] = useState<CalculationResult | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const scrollToResult = () => {
@@ -146,25 +147,25 @@ export default function CalculatorScreen() {
           //Respiratory
           'respiratory/ahi': () => 
             require('@/app/calculator/config/categories/respiratory/ahi'),
-          'Respiratory/alveolar-gas': () => 
+          'respiratory/alveolar-gas': () => 
             require('@/app/calculator/config/categories/respiratory/alveolar-gas'),
-          'Respiratory/blood-oxygen': () => 
+          'respiratory/blood-oxygen': () => 
             require('@/app/calculator/config/categories/respiratory/blood-oxygen'),
-          'Respiratory/curb65': () => 
+          'respiratory/curb65': () => 
             require('@/app/calculator/config/categories/respiratory/curb65'),
-          'Respiratory/oxygenation-index': () => 
+          'respiratory/oxygenation-index': () => 
             require('@/app/calculator/config/categories/respiratory/oxygenation-index'),
-          'Respiratory/p50': () => 
+          'respiratory/p50': () => 
             require('@/app/calculator/config/categories/respiratory/p50'),
-          'Respiratory/tcpo2-pao2': () => 
+          'respiratory/tcpo2-pao2': () => 
             require('@/app/calculator/config/categories/respiratory/tcpo2-pao2'),
-          'Respiratory/tcpo2': () => 
+          'respiratory/tcpo2': () => 
             require('@/app/calculator/config/categories/respiratory/tcpo2'),
-          'Respiratory/tidal-volume': () => 
+          'respiratory/tidal-volume': () => 
             require('@/app/calculator/config/categories/respiratory/tidal-volume'),
           
           //Surgery
-          'Surgery/alvarado': () => 
+          'surgery/alvarado': () => 
             require('@/app/calculator/config/categories/surgery/alvarado'),
         };
 
@@ -182,10 +183,10 @@ export default function CalculatorScreen() {
         const module = await importFn();
         const configKey = `${id.toString().replace(/-([a-z])/g, (g) => g[1].toUpperCase())}Config`;
         setConfig(module[configKey]);
-        setError(null);
+        setFormError(null);
       } catch (err) {
         console.error('Error loading calculator:', err);
-        setError(`Failed to load calculator: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setFormError(`Failed to load calculator: ${err instanceof Error ? err.message : 'Unknown error'}`);
       } finally {
         setLoading(false);
       }
@@ -202,10 +203,10 @@ export default function CalculatorScreen() {
     );
   }
 
-  if (error || !config) {
+  if (formError || !config) {
     return (
       <View style={styles.container}>
-        <ThemedText style={[styles.text, styles.error]}>{error || 'Calculator not found'}</ThemedText>
+        <ThemedText style={[styles.text, styles.error]}>{formError || 'Calculator not found'}</ThemedText>
       </View>
     );
   }
@@ -243,36 +244,71 @@ export default function CalculatorScreen() {
               <CalculatorForm
                 fields={config.fields}
                 values={values}
-                onChange={(field, value) => setValues(prev => ({ ...prev, [field]: value }))}
-                onReset={() => setValues({})}
-                onSubmit={() => {
+                onChange={(field, value) => {
+                  // Clear error for this field when user types
+                  if (errors[field]) {
+                    const newErrors = { ...errors };
+                    delete newErrors[field];
+                    setErrors(newErrors);
+                  }
+                  setValues(prev => ({ ...prev, [field]: value }));
+                }}
+                onReset={() => {
+                  setValues({});
+                  setErrors({});
+                  setFormError(null);
+                  setResult(null);
+                }}
+                onSubmit={(e) => {
+                  e?.preventDefault?.(); // Prevent form submission
                   try {
+                    // Clear previous errors
+                    setErrors({});
+                    setFormError(null);
+                    
+                    // Validate form
                     const validationErrors = config.validate(values);
+                    
                     if (validationErrors) {
                       if (typeof validationErrors === 'string') {
-                        setError(validationErrors);
-                      } else {
+                        // For backward compatibility with string errors
+                        setFormError(validationErrors);
+                      } else if (Object.keys(validationErrors).length > 0) {
+                        // Set field-specific errors
+                        setErrors(validationErrors);
+                        // Also show the first error as a form-level error
                         const firstErrorKey = Object.keys(validationErrors)[0];
-                        setError(validationErrors[firstErrorKey]);
+                        const firstError = validationErrors[firstErrorKey];
+                        setFormError(`Error: ${firstError}`);
+                        // Scroll to the first error
+                        setTimeout(() => {
+                          const element = document.getElementById(`field-${firstErrorKey}`);
+                          element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
                       }
                       setResult(null);
-                      return;
+                      return false; // Prevent form submission
                     }
+                    
+                    // If validation passes, calculate the result
                     const calculationResult = config.calculate(values);
                     setResult(calculationResult);
-                    setError(null);
                     scrollToResult();
+                    return true; // Allow form submission
                   } catch (err) {
-                    setError(`Calculation error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                    setFormError(`Calculation error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                    setResult(null);
+                    return false; // Prevent form submission
                   }
                 }}
+                errors={errors}
               />
               {result && (
                 <CalculatorResult 
                   result={result.result} 
                   interpretation={result.interpretation} 
                   resultUnit={config.resultUnit}
-                  error={error}
+                  error={formError}
                   status={result.status}
                 />
               )}

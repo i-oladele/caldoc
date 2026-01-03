@@ -1,5 +1,5 @@
 import { ThemedText } from '@/components/ThemedText';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { CalculatorValues, InputField } from '../config/calculator';
 
@@ -7,24 +7,59 @@ interface CalculatorFormProps {
   fields: InputField[];
   values: CalculatorValues;
   onChange: (field: string, value: string | boolean) => void;
-  error?: string | null;
   onSubmit: () => void;
   onReset: () => void;
+  errors?: Record<string, string>;
 }
 
 export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   fields,
   values,
   onChange,
-  error,
   onSubmit,
   onReset,
+  errors = {},
 }) => {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isSubmitHovered, setIsSubmitHovered] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const inputRefs = useRef<{[key: string]: any}>({});
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onSubmit();
+  };
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    // Clear error for this field when user types
+    if (errors[field]) {
+      const newErrors = { ...errors };
+      delete newErrors[field];
+      // @ts-ignore - We need to update the errors prop
+      if (onChange) onChange('errors', newErrors);
+    }
+    onChange(field, value);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onSubmit();
+  };
 
   return (
-    <View style={styles.container}>
+    <form 
+      ref={formRef}
+      onSubmit={handleFormSubmit} 
+      style={{ width: '100%' }}
+    >
+      <View style={styles.container}>
+        <button 
+          type="submit" 
+          style={{ display: 'none' }}
+          aria-hidden="true"
+        />
       <View style={styles.headerRow}>
         <ThemedText style={styles.title}>Input Values</ThemedText>
         <TouchableOpacity onPress={onReset} style={styles.resetButton}>
@@ -41,13 +76,18 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
           return (
             <View key={fieldKey} style={styles.inputContainer}>
               <ThemedText style={styles.label}>{field.label}</ThemedText>
-              <View style={[styles.selectContainer, isFocused && styles.inputWrapperFocused]}>
+              <View style={[
+                styles.selectContainer, 
+                isFocused && styles.inputWrapperFocused,
+                errors[fieldKey] && styles.inputError
+              ]}>
                 <select
                   style={styles.select}
                   value={fieldValue as string || ''}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
-                    onChange(fieldKey, e.currentTarget.value)
-                  }
+                  onChange={(e) => {
+                    const target = e.target as HTMLSelectElement;
+                    onChange(fieldKey, target.value);
+                  }}
                   onFocus={() => setFocusedField(fieldKey)}
                   onBlur={() => setFocusedField(null)}
                 >
@@ -59,6 +99,9 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
                   ))}
                 </select>
               </View>
+              {errors[fieldKey] && (
+                <ThemedText style={styles.fieldError}>{errors[fieldKey]}</ThemedText>
+              )}
             </View>
           );
         }
@@ -109,7 +152,11 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
         return (
           <View key={fieldKey} style={styles.inputContainer}>
             <ThemedText style={styles.label}>{field.label}</ThemedText>
-            <View style={[styles.inputWrapper, isFocused && styles.inputWrapperFocused]}>
+            <View style={[
+              styles.inputWrapper, 
+              isFocused && styles.inputWrapperFocused,
+              errors[fieldKey] && styles.inputError
+            ]}>
               <TextInput
                 style={styles.input}
                 placeholder={field.placeholder || 'Enter value'}
@@ -124,11 +171,13 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
               />
               {field.unit ? <ThemedText style={styles.unit}>{field.unit}</ThemedText> : null}
             </View>
+            {errors[fieldKey] && (
+              <ThemedText style={styles.fieldError}>{errors[fieldKey]}</ThemedText>
+            )}
           </View>
         );
       })}
 
-      {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
 
       <Pressable 
         style={({ pressed }) => [
@@ -136,13 +185,17 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
           isSubmitHovered && Platform.OS === 'web' && styles.submitButtonHover,
           pressed && styles.submitButtonPressed,
         ]}
-        onPress={onSubmit}
+        onPress={(e) => {
+          e?.preventDefault?.();
+          onSubmit();
+        }}
         onHoverIn={() => setIsSubmitHovered(true)}
         onHoverOut={() => setIsSubmitHovered(false)}
       >
         <ThemedText style={styles.submitButtonText}>Calculate</ThemedText>
       </Pressable>
-    </View>
+      </View>
+    </form>
   );
 };
 
@@ -163,6 +216,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 0,
     outlineWidth: 0,
+  } as any,
+  input: {
+    flex: 1,
+    height: 40,
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    outlineWidth: 0,
+    width: '100%',
+  },
+  hiddenButton: {
+    display: 'none',
+    visibility: 'hidden',
+    height: 0,
+    width: 0,
+    padding: 0,
+    margin: 0,
+    border: 0,
   } as any,
   container: {
     padding: 24,
@@ -286,10 +358,24 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_500Medium',
   },
   error: {
-    color: '#FF3B30',
+    color: '#DC2626',
     fontSize: 14,
     marginTop: 8,
+    marginBottom: 8,
     fontFamily: 'DMSans_500Medium',
+    backgroundColor: '#FEF2F2',
+    padding: 8,
+    borderRadius: 4,
+  },
+  fieldError: {
+    color: '#DC2626',
+    fontSize: 12,
+    marginTop: 4,
+    fontFamily: 'DMSans_400Regular',
+  },
+  inputError: {
+    borderColor: '#DC2626',
+    backgroundColor: '#FEF2F2',
   },
   submitButton: {
     backgroundColor: '#3D50B5',

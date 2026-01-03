@@ -1,4 +1,4 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const correctedCalciumConfig: CalculatorConfig = {
   id: 'corrected-calcium',
@@ -37,22 +37,42 @@ export const correctedCalciumConfig: CalculatorConfig = {
     return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
-    const totalCalcium = parseFloat(values['Total Calcium']);
-    const albumin = parseFloat(values.Albumin);
+    const totalCalcium = parseFloat(values['totalCalcium']);
+    const albumin = parseFloat(values['albumin']);
+    
+    // Handle potential NaN values
+    if (isNaN(totalCalcium) || isNaN(albumin)) {
+      return {
+        result: NaN,
+        interpretation: 'Error: Invalid input values',
+        status: 'danger' as const
+      };
+    }
+    
     const correctedCalcium = totalCalcium + 0.8 * (4 - albumin);
     
     let interpretation = '';
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    
     if (correctedCalcium < 8.5) {
       interpretation = 'Hypocalcemia';
+      status = 'danger';
     } else if (correctedCalcium <= 10.5) {
       interpretation = 'Normal calcium level';
+      status = 'success';
     } else {
       interpretation = 'Hypercalcemia';
+      status = 'danger';
     }
     
     return {
-      result: parseFloat(correctedCalcium.toFixed(1)),
-      interpretation
+      result: correctedCalcium,
+      interpretation: `Corrected Calcium: ${correctedCalcium.toFixed(1)} mg/dL\n` +
+        `• Interpretation: ${interpretation}\n` +
+        `• Total Calcium: ${totalCalcium} mg/dL\n` +
+        `• Albumin: ${albumin} g/dL`,
+      status,
+      resultUnit: 'mg/dL'
     };
   },
   formula: 'Corrected Calcium = Total Calcium + 0.8 × (4 - Albumin)',

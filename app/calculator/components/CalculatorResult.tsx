@@ -7,7 +7,6 @@ interface CalculatorResultProps {
   result: number | null;
   interpretation: string;
   resultUnit: string;
-  error?: string | null;
   status?: CalculationStatus;
 }
 
@@ -39,18 +38,9 @@ export const CalculatorResult: React.FC<CalculatorResultProps> = ({
   result,
   interpretation,
   resultUnit,
-  error,
   status,
 }) => {
-  if (error) {
-    return (
-      <View style={[styles.container, styles.errorContainer]}>
-        <ThemedText style={styles.errorText}>{error}</ThemedText>
-      </View>
-    );
-  }
-
-  const statusStyles = status ? STATUS_STYLES[status] : null;
+const statusStyles = status ? STATUS_STYLES[status] : null;
   const interpretationLines = interpretation ? interpretation.split('\n') : [];
 
   return (
