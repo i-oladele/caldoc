@@ -42,30 +42,30 @@ export const fenConfig: CalculatorConfig = {
   ],
   validate: (values: { [key: string]: string }) => {
     const errors: { [key: string]: string } = {};
-    const urineNa = parseFloat(values['Urine Sodium']);
-    const serumNa = parseFloat(values['Serum Sodium']);
-    const urineCr = parseFloat(values['Urine Creatinine']);
-    const serumCr = parseFloat(values['Serum Creatinine']);
+    const urineNa = parseFloat(values['urineSodium']);
+    const serumNa = parseFloat(values['serumSodium']);
+    const urineCr = parseFloat(values['urineCreatinine']);
+    const serumCr = parseFloat(values['serumCreatinine']);
     
     if (isNaN(urineNa) || urineNa <= 0) {
-      errors['Urine Sodium'] = 'Urine sodium must be positive';
+      errors['urineSodium'] = 'Urine sodium must be positive';
     }
     if (isNaN(serumNa) || serumNa <= 0) {
-      errors['Serum Sodium'] = 'Serum sodium must be positive';
+      errors['serumSodium'] = 'Serum sodium must be positive';
     }
     if (isNaN(urineCr) || urineCr <= 0) {
-      errors['Urine Creatinine'] = 'Urine creatinine must be positive';
+      errors['urineCreatinine'] = 'Urine creatinine must be positive';
     }
     if (isNaN(serumCr) || serumCr <= 0) {
-      errors['Serum Creatinine'] = 'Serum creatinine must be positive';
+      errors['serumCreatinine'] = 'Serum creatinine must be positive';
     }
     return Object.keys(errors).length > 0 ? errors : null;
   },
   calculate: (values: { [key: string]: string }) => {
-    const urineNa = parseFloat(values['Urine Sodium']);
-    const serumNa = parseFloat(values['Serum Sodium']);
-    const urineCr = parseFloat(values['Urine Creatinine']);
-    const serumCr = parseFloat(values['Serum Creatinine']);
+    const urineNa = parseFloat(values['urineSodium']);
+    const serumNa = parseFloat(values['serumSodium']);
+    const urineCr = parseFloat(values['urineCreatinine']);
+    const serumCr = parseFloat(values['serumCreatinine']);
     const fen = ((urineNa / serumNa) / (urineCr / serumCr)) * 100;
     
     let interpretation = '';

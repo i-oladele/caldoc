@@ -305,7 +305,7 @@ export const CALCULATIONS: Calculation[] = [
     category: 'respiratory'
   },
   {
-    id: 'curb-65',
+    id: 'curb65',
     name: 'CURB-65 Score',
     description: 'Assesses severity and need for hospitalization in community-acquired pneumonia.',
     category: 'respiratory'

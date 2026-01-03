@@ -29,8 +29,8 @@ export const estimatedBloodVolumeConfig: CalculatorConfig = {
     }
   ],
   validate: (values: { [key: string]: string }) => {
-    const weight = parseFloat(values['Weight']);
-    const gender = values['Gender'];
+    const weight = parseFloat(values['weight']);
+    const gender = values['gender'];
     
     if (isNaN(weight) || weight <= 0) {
       return 'Weight must be a positive number';
@@ -41,8 +41,8 @@ export const estimatedBloodVolumeConfig: CalculatorConfig = {
     return null;
   },
   calculate: (values: { [key: string]: string }) => {
-    const weight = parseFloat(values['Weight']);
-    const gender = values['Gender'];
+    const weight = parseFloat(values['weight']);
+    const gender = values['gender'];
     
     // Average blood volume in mL/kg based on gender
     const bloodVolumePerKg = gender === 'male' ? 75 : 65;

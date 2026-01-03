@@ -1,7 +1,7 @@
 import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
-export const curb65Config: CalculatorConfig = {
-  id: 'curb-65',
+const curb65Config: CalculatorConfig = {
+  id: 'curb65',
   name: 'CURB-65 Score',
   description: 'Assesses severity and need for hospitalization in community-acquired pneumonia.',
   category: 'Respiratory',
@@ -143,8 +143,19 @@ export const curb65Config: CalculatorConfig = {
         '• Always consider clinical judgment over score alone.'
       ].join('\n');
   
+      // Determine status based on score
+      let status: 'success' | 'warning' | 'danger';
+      if (score <= 1) {
+        status = 'success'; // Green for low risk
+      } else if (score === 2) {
+        status = 'warning'; // Yellow for moderate risk
+      } else {
+        status = 'danger';  // Red for high risk
+      }
+
       return {
         result: score,
+        status,
         interpretation: `CURB-65 Score: ${score}/6\n` +
                        `Mortality Risk: ${mortalityRisk}\n` +
                        `Recommended Management: ${management}\n` +
@@ -177,4 +188,6 @@ export const curb65Config: CalculatorConfig = {
   resultUnit: 'points (0-5)'
 };
 
+// Export as both named and default export
+export { curb65Config };
 export default curb65Config;

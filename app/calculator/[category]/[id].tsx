@@ -54,17 +54,17 @@ export default function CalculatorScreen() {
             require('@/app/calculator/config/categories/cardiology/reynolds'),
 
           //Critical Care
-          'Critical-care/apache-ii': () => 
+          'critical-care/apache-ii': () => 
             require('@/app/calculator/config/categories/critical-care/apache-ii'),
-          'Critical-care/estimated-blood-loss': () => 
+          'critical-care/estimated-blood-loss': () => 
             require('@/app/calculator/config/categories/critical-care/estimated-blood-loss'),
-          'Critical-care/lactate-clearance': () => 
+          'critical-care/lactate-clearance': () => 
             require('@/app/calculator/config/categories/critical-care/lactate-clearance'),
-          'Critical-care/shock-index': () => 
+          'critical-care/shock-index': () => 
             require('@/app/calculator/config/categories/critical-care/shock-index'),
-          'Critical-care/shock-volume': () => 
+          'critical-care/shock-volume': () => 
             require('@/app/calculator/config/categories/critical-care/shock-volume'),
-          'Critical-care/sofa': () => 
+          'critical-care/sofa': () => 
             require('@/app/calculator/config/categories/critical-care/sofa'),
           
           //Gastroenterology
@@ -152,6 +152,8 @@ export default function CalculatorScreen() {
           'respiratory/blood-oxygen': () => 
             require('@/app/calculator/config/categories/respiratory/blood-oxygen'),
           'respiratory/curb65': () => 
+            require('@/app/calculator/config/categories/respiratory/curb65'),
+          'respiratory/curb-65': () => 
             require('@/app/calculator/config/categories/respiratory/curb65'),
           'respiratory/oxygenation-index': () => 
             require('@/app/calculator/config/categories/respiratory/oxygenation-index'),
