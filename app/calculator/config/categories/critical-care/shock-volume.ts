@@ -1,4 +1,4 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const shockVolumeConfig: CalculatorConfig = {
   id: 'shock-volume',
@@ -105,11 +105,24 @@ export const shockVolumeConfig: CalculatorConfig = {
       interpretation
     };
   },
-  formula: 'Volume (ml) = Weight (kg) × Volume per kg (ml/kg)',
+  formula: `Volume (ml) = Weight (kg) × Volume per kg (ml/kg)
+
+Volume per kg based on shock type:
+- Hemorrhagic: 30 ml/kg
+- Septic: 20 ml/kg
+- Cardiogenic: 10 ml/kg (use with caution)
+- Anaphylactic: 20 ml/kg
+- Neurogenic: 15 ml/kg
+
+Interpretation:
+- Systolic BP < 90 mmHg: "Hypotensive shock - consider more aggressive fluid resuscitation"
+- Systolic BP ≥ 90 mmHg: "Normotensive - monitor response to fluid challenge"`,
+
   references: [
     'Advanced Trauma Life Support (ATLS) Guidelines',
     'Surviving Sepsis Campaign Guidelines',
-    'Critical Care Medicine: Principles of Diagnosis and Management'
+    'Critical Care Medicine: Principles of Diagnosis and Management',
+    'Note: This is a simplified calculation. Always use clinical judgment and monitor patient response.'
   ],
   resultUnit: 'ml'
 };

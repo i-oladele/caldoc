@@ -199,16 +199,22 @@ export const sofaConfig: CalculatorConfig = {
     // Calculate total SOFA score
     const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
     
-    // Interpret the score
+    // Interpret the score and set status for color coding
     let interpretation = '';
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    
     if (totalScore === 0) {
       interpretation = 'No organ failure';
+      status = 'success';  // Green for no organ failure
     } else if (totalScore <= 6) {
       interpretation = 'Mild organ failure';
+      status = 'success';  // Still green for mild cases
     } else if (totalScore <= 11) {
       interpretation = 'Moderate organ failure';
+      status = 'warning';  // Yellow for moderate cases
     } else {
       interpretation = 'Severe organ failure';
+      status = 'danger';   // Red for severe cases
     }
     
     // Check for sepsis-3 criteria (SOFA ≥ 2 points from baseline)
@@ -226,7 +232,8 @@ export const sofaConfig: CalculatorConfig = {
                      `• Liver: ${scores.liver}\n` +
                      `• Cardiovascular: ${scores.cardiovascular}\n` +
                      `• CNS: ${scores.cns}\n` +
-                     `• Renal: ${scores.renal}`
+                     `• Renal: ${scores.renal}`,
+      status: status
     };
   },
   formula: 'SOFA Score Components (0-4 points each):\n\n' +

@@ -1,16 +1,48 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculationResult, CalculatorConfig, CalculatorValues } from '@/app/calculator/config/calculator';
 
 export const tidalVolumeConfig: CalculatorConfig = {
   id: 'tidal-volume',
+  name: 'Tidal Volume Calculator',
+  description: 'Calculates the appropriate tidal volume for mechanical ventilation based on predicted body weight and ARDSnet protocol.',
+  category: 'respiratory',
   fields: [
-    { label: 'Height', placeholder: 'Enter height (inches)', unit: 'inches', keyboardType: 'numeric' },
-    { label: 'Sex', placeholder: 'Enter M for male, F for female', unit: '', keyboardType: 'default' },
-    { label: 'Desired Tidal Volume', placeholder: 'Enter desired volume (mL/kg)', unit: 'mL/kg', keyboardType: 'numeric' }
+    { 
+      id: 'height',
+      type: 'number',
+      label: 'Height', 
+      placeholder: 'Enter height (inches)', 
+      unit: 'inches', 
+      keyboardType: 'numeric',
+      min: 0,
+      step: 0.1
+    },
+    {
+      id: 'sex',
+      type: 'select',
+      label: 'Sex',
+      options: [
+        { label: 'Male', value: 'M' },
+        { label: 'Female', value: 'F' }
+      ],
+      placeholder: 'Select sex',
+      defaultValue: ''
+    },
+    { 
+      id: 'desiredVolume',
+      type: 'number',
+      label: 'Desired Tidal Volume', 
+      placeholder: 'Enter desired volume (mL/kg)', 
+      unit: 'mL/kg', 
+      keyboardType: 'numeric',
+      min: 6,
+      max: 8,
+      step: 0.1
+    }
   ],
-  validate: (values: { [key: string]: string }) => {
-    const height = parseFloat(values['Height']);
-    const sex = values['Sex'].toUpperCase();
-    const desiredVolume = parseFloat(values['Desired Tidal Volume']);
+  validate: (values: CalculatorValues) => {
+    const height = typeof values.height === 'string' ? parseFloat(values.height) : values.height as number;
+    const sex = typeof values.sex === 'string' ? values.sex.toUpperCase() : '';
+    const desiredVolume = typeof values.desiredVolume === 'string' ? parseFloat(values.desiredVolume) : values.desiredVolume as number;
     
     if (isNaN(height) || height <= 0) {
       return 'Height must be positive';
@@ -23,13 +55,13 @@ export const tidalVolumeConfig: CalculatorConfig = {
     }
     return null;
   },
-  calculate: (values: { [key: string]: string }) => {
-    const height = parseFloat(values['Height']);
-    const sex = values['Sex'].toUpperCase();
-    const desiredVolume = parseFloat(values['Desired Tidal Volume']);
+  calculate: (values: CalculatorValues): CalculationResult => {
+    const height = typeof values.height === 'string' ? parseFloat(values.height) : values.height as number;
+    const sex = typeof values.sex === 'string' ? values.sex.toUpperCase() : '';
+    const desiredVolume = typeof values.desiredVolume === 'string' ? parseFloat(values.desiredVolume) : values.desiredVolume as number;
     
-    // Calculate IBW
-    let ibw;
+    // Calculate ideal body weight (IBW) in kg
+    let ibw: number;
     if (sex === 'M') {
       ibw = 50 + 2.3 * (height - 60);
     } else {
@@ -37,11 +69,17 @@ export const tidalVolumeConfig: CalculatorConfig = {
     }
     
     // Calculate tidal volume
-    const tidalVolume = ibw * desiredVolume;
+    const tidalVolume = Math.round(ibw * desiredVolume);
     
     return {
-      result: parseFloat(tidalVolume.toFixed(0)),
-      interpretation: `Tidal Volume: ${tidalVolume.toFixed(0)} mL for ${desiredVolume} mL/kg`
+      result: tidalVolume,
+      resultUnit: 'mL',
+      interpretation: `For a ${sex === 'M' ? 'male' : 'female'} patient with a height of ${height} inches (IBW: ${ibw.toFixed(1)} kg), the recommended tidal volume is ${tidalVolume} mL at ${desiredVolume} mL/kg.`,
+      details: [
+        `Ideal Body Weight (IBW): ${ibw.toFixed(1)} kg`,
+        `Desired Tidal Volume: ${desiredVolume} mL/kg`,
+        `Calculated Tidal Volume: ${tidalVolume} mL`
+      ]
     };
   },
   formula: 'Tidal Volume = IBW × (6-8 mL/kg)\nwhere IBW (kg) = 50 + 2.3 × (height in inches - 60) for males\nor 45.5 + 2.3 × (height in inches - 60) for females',

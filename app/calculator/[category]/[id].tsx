@@ -84,6 +84,8 @@ export default function CalculatorScreen() {
           //Hematology
           'hematology/hematocrit': () => 
             require('@/app/calculator/config/categories/hematology/hematocrit'),
+          'hematology/wells-dvt': () => 
+            require('@/app/calculator/config/categories/hematology/wells-dvt'),
           'hematology/warfarin-dose': () => 
             require('@/app/calculator/config/categories/hematology/warfarin-dose'),
           'hematology/wells-dvt': () => 

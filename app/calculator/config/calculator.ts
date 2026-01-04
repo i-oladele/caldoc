@@ -12,6 +12,9 @@ export interface InputField {
   keyboardType?: 'numeric' | 'decimal-pad' | 'number-pad' | 'default';
   value?: string;
   defaultValue?: string;
+  group?: string;
+  groupPosition?: 'start' | 'middle' | 'end';
+  hideLabel?: boolean;
 }
 
 export type CalculatorValues = Record<string, string | boolean>;

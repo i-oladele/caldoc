@@ -1,4 +1,4 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const trpConfig: CalculatorConfig = {
   id: 'trp',
@@ -48,27 +48,36 @@ export const trpConfig: CalculatorConfig = {
       keyboardType: 'decimal-pad'
     }
   ],
-  validate: (values: { [key: string]: string }) => {
+  validate: (values: { [key: string]: string | number | boolean }) => {
     const errors: { [key: string]: string } = {};
     
     const requiredFields = ['serumPhosphorus', 'serumCreatinine', 'urinePhosphorus', 'urineCreatinine', 'urineVolume'];
     
     requiredFields.forEach(field => {
-      if (!values[field]) {
+      const value = values[field];
+      const numValue = typeof value === 'string' ? parseFloat(value) : value as number;
+      
+      if (value === undefined || value === null || value === '') {
         errors[field] = 'This field is required';
-      } else if (isNaN(Number(values[field])) || Number(values[field]) <= 0) {
+      } else if (isNaN(numValue) || numValue <= 0) {
         errors[field] = 'Must be a positive number';
       }
     });
     
     return Object.keys(errors).length > 0 ? errors : null;
   },
-  calculate: (values: { [key: string]: string }) => {
-    const serumP = parseFloat(values.serumPhosphorus);
-    const serumCr = parseFloat(values.serumCreatinine);
-    const urineP = parseFloat(values.urinePhosphorus);
-    const urineCr = parseFloat(values.urineCreatinine);
-    const urineVol = parseFloat(values.urineVolume) * 1000; // Convert L to mL
+  calculate: (values: { [key: string]: string | number | boolean }) => {
+    const parseValue = (val: string | number | boolean): number => {
+      if (typeof val === 'number') return val;
+      if (typeof val === 'string') return parseFloat(val);
+      return 0; // Shouldn't happen due to validation
+    };
+    
+    const serumP = parseValue(values.serumPhosphorus);
+    const serumCr = parseValue(values.serumCreatinine);
+    const urineP = parseValue(values.urinePhosphorus);
+    const urineCr = parseValue(values.urineCreatinine);
+    const urineVol = parseValue(values.urineVolume) * 1000; // Convert L to mL
     
     // Calculate TRP = 1 - [(urine phosphorus × serum creatinine) / (serum phosphorus × urine creatinine)] × 100
     const trp = 100 * (1 - ((urineP * serumCr) / (serumP * urineCr)));
@@ -77,17 +86,52 @@ export const trpConfig: CalculatorConfig = {
     const phosphateExcretion = (urineP * urineVol) / (1440 * serumP);
     
     let interpretation = '';
+    let status: 'success' | 'warning' | 'danger';
+    
     if (trp < 80) {
-      interpretation = 'Low TRP suggests renal phosphate wasting. Consider disorders like hyperparathyroidism, Fanconi syndrome, or vitamin D deficiency.';
-    } else if (trp > 90) {
-      interpretation = 'High TRP suggests appropriate renal phosphate conservation. Consider hypoparathyroidism or vitamin D excess.';
-    } else {
+      interpretation = 'Low TRP suggests renal phosphate wasting.';
+      status = 'danger'; // Red for abnormal (low)
+    } else if (trp <= 95) {
       interpretation = 'Normal TRP. Normal renal phosphate handling.';
+      status = 'success'; // Green for normal
+    } else {
+      interpretation = 'High TRP suggests increased phosphate reabsorption.';
+      status = 'warning'; // Yellow for high
     }
+    
+    // Add potential causes and clinical notes
+    const details = [
+      `TRP: ${trp.toFixed(1)}%`,
+      `Interpretation: ${interpretation}`,
+      `Phosphate Excretion Rate: ${phosphateExcretion.toFixed(2)} mmol/min`,
+      '',
+      'Reference Ranges (Updated 2024):',
+      '• Normal: 85-95%',
+      '• Low: <85% (Phosphate wasting)',
+      '• High: >95% (Increased reabsorption)',
+      '',
+      'Clinical Interpretation:',
+      '• Low TRP (<85%) may indicate:',
+      '  - Fanconi syndrome',
+      '  - Hyperparathyroidism',
+      '  - Vitamin D deficiency',
+      '  - Renal tubular acidosis',
+      '• High TRP (>95%) may indicate:',
+      '  - Low phosphate intake',
+      '  - Recovery after phosphate depletion',
+      '  - Pre-renal conservation states',
+      '• Always interpret in clinical context with:',
+      '  - Serum phosphate levels',
+      '  - PTH levels',
+      '  - Vitamin D status',
+      '  - Urinary phosphate excretion'
+    ];
     
     return {
       result: trp,
-      interpretation: `${interpretation} Phosphate excretion rate: ${phosphateExcretion.toFixed(2)} mmol/min`
+      status: status,
+      interpretation: `TRP: ${trp.toFixed(1)}%\n${interpretation}`,
+      details: details
     };
   },
   formula: 'TRP (%) = [1 - (Urine P × Serum Cr) / (Serum P × Urine Cr)] × 100',

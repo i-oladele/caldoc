@@ -144,25 +144,25 @@ export const tcpo2Config: CalculatorConfig = {
     // Ensure TcPO2 doesn't exceed PaO2
     tcpO2 = Math.min(tcpO2, pao2);
     
-    // Determine interpretation
+    // Determine interpretation and status
     let interpretation = '';
     let woundHealingPotential = '';
+    let resultStatus: 'success' | 'warning' | 'danger';
     
-    if (tcpO2 >= 50) {
-      interpretation = 'Normal tissue oxygenation';
-      woundHealingPotential = 'Excellent';
-    } else if (tcpO2 >= 40) {
-      interpretation = 'Mild tissue hypoxia';
-      woundHealingPotential = 'Good';
+    if (tcpO2 >= 40) {
+      interpretation = tcpO2 >= 50 ? 'Normal tissue oxygenation' : 'Mild tissue hypoxia';
+      woundHealingPotential = tcpO2 >= 50 ? 'Excellent' : 'Good';
+      resultStatus = 'success';  // Green
     } else if (tcpO2 >= 30) {
       interpretation = 'Moderate tissue hypoxia';
       woundHealingPotential = 'Possible, but may be delayed';
-    } else if (tcpO2 >= 20) {
-      interpretation = 'Severe tissue hypoxia';
-      woundHealingPotential = 'Unlikely without intervention';
+      resultStatus = 'warning';  // Yellow
     } else {
-      interpretation = 'Critical tissue hypoxia';
-      woundHealingPotential = 'Very poor - revascularization likely needed';
+      interpretation = tcpO2 >= 20 ? 'Severe tissue hypoxia' : 'Critical tissue hypoxia';
+      woundHealingPotential = tcpO2 >= 20 
+        ? 'Unlikely without intervention' 
+        : 'Very poor - revascularization likely needed';
+      resultStatus = 'danger';  // Red
     }
     
     // Clinical notes
@@ -177,6 +177,8 @@ export const tcpo2Config: CalculatorConfig = {
     
     return {
       result: tcpO2,
+      status: resultStatus, // Changed from resultStatus to status to match the expected prop name
+      resultUnit: 'mmHg',
       interpretation: `Estimated TcPO₂: ${tcpO2.toFixed(1)} mmHg\n` +
                      `Interpretation: ${interpretation}\n` +
                      `Wound Healing Potential: ${woundHealingPotential}\n\n` +
@@ -184,7 +186,21 @@ export const tcpo2Config: CalculatorConfig = {
                      `• PaO₂: ${pao2} mmHg\n` +
                      `• Age: ${age} years\n` +
                      `• Skin Temperature: ${temp}°C\n\n` +
-                     `Clinical Notes:\n${notes}`
+                     `Clinical Notes:\n${notes}`,
+      details: [
+        `Estimated TcPO₂: ${tcpO2.toFixed(1)} mmHg`,
+        `Interpretation: ${interpretation}`,
+        `Wound Healing Potential: ${woundHealingPotential}`,
+        '',
+        'Input Parameters:',
+        `• PaO₂: ${pao2} mmHg`,
+        `• Age: ${age} years`,
+        `• Skin Temperature: ${temp}°C`,
+        `• Measurement Site: ${location.charAt(0).toUpperCase() + location.slice(1)}`,
+        `• Clinical Condition: ${condition === 'none' ? 'None' : condition.charAt(0).toUpperCase() + condition.slice(1)}`,
+        '',
+        'Clinical Notes:'
+      ].concat(notes.split('\n').filter(note => note.trim() !== ''))
     };
   },
   formula: 'Estimated TcPO₂ Calculation:\n\n' +

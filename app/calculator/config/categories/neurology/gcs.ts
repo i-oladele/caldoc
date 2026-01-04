@@ -9,7 +9,8 @@ export const gcsConfig: CalculatorConfig = {
     {
       id: 'eyeOpening',
       label: 'Eye Opening (E)',
-      type: 'radio',
+      type: 'select',
+      placeholder: 'Select eye opening response',
       options: [
         { label: '4 - Spontaneous', value: '4' },
         { label: '3 - To speech', value: '3' },
@@ -21,7 +22,8 @@ export const gcsConfig: CalculatorConfig = {
     {
       id: 'verbalResponse',
       label: 'Verbal Response (V)',
-      type: 'radio',
+      type: 'select',
+      placeholder: 'Select verbal response',
       options: [
         { label: '5 - Oriented', value: '5' },
         { label: '4 - Confused', value: '4' },
@@ -34,7 +36,8 @@ export const gcsConfig: CalculatorConfig = {
     {
       id: 'motorResponse',
       label: 'Motor Response (M)',
-      type: 'radio',
+      type: 'select',
+      placeholder: 'Select motor response',
       options: [
         { label: '6 - Obeys commands', value: '6' },
         { label: '5 - Localizes to pain', value: '5' },
@@ -46,16 +49,16 @@ export const gcsConfig: CalculatorConfig = {
       required: true
     }
   ],
-  validate: (values: { [key: string]: string }) => {
+  validate: (values: Record<string, string | boolean>) => {
     if (!values.eyeOpening) return 'Please select an Eye Opening score';
     if (!values.verbalResponse) return 'Please select a Verbal Response score';
     if (!values.motorResponse) return 'Please select a Motor Response score';
     return null;
   },
-  calculate: (values: { [key: string]: string }) => {
-    const eye = parseInt(values.eyeOpening);
-    const verbal = parseInt(values.verbalResponse);
-    const motor = parseInt(values.motorResponse);
+  calculate: (values: Record<string, string | boolean>) => {
+    const eye = parseInt(values.eyeOpening as string);
+    const verbal = parseInt(values.verbalResponse as string);
+    const motor = parseInt(values.motorResponse as string);
     const score = eye + verbal + motor;
     
     let severity = '';

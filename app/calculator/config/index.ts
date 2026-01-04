@@ -28,16 +28,17 @@ const CALCULATOR_EXPORTS: { [key: string]: string } = {
   'shock-index': 'shockIndexConfig',
   'bsa': 'bsaConfig',
   'apgar': 'apgarConfig',
+  'tcpo2': 'tcpo2Config',
   'oxygenation-index': 'oxygenationIndexConfig',
   'ibw': 'ibwConfig',
   'qtc': 'qtcConfig',
   'naranjo': 'naranjoConfig',
-  'tcpo2-pao2': 'tcPo2PaO2Config',
   'infusion-rate': 'infusionRateConfig',
   'estimated-blood-loss': 'estimatedBloodLossConfig',
   'tidal-volume': 'tidalVolumeConfig',
   'cardiac-output': 'cardiacOutputConfig',
-  'gestational-age': 'gestationalAgeConfig'
+  'gestational-age': 'gestationalAgeConfig',
+  'wells-dvt': 'wellsDVTConfig'
 };
 
 export const loadCalculatorConfig = (id: string): CalculatorConfig => {

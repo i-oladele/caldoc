@@ -71,6 +71,168 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
     onSubmit();
   };
 
+  // Group fields by their group property
+  const groupedFields = fields.reduce<{[key: string]: InputField[]}>((groups, field) => {
+    const group = field.group || field.id;
+    if (!groups[group]) {
+      groups[group] = [];
+    }
+    groups[group].push(field);
+    return groups;
+  }, {});
+
+  // Function to render form fields
+  const renderField = (field: InputField) => {
+    const fieldKey = field.id;
+    const fieldType = field.type || 'number';
+    const fieldValue = values[fieldKey];
+    const isFocused = focusedField === fieldKey;
+
+    if (fieldType === 'select' && field.options) {
+      return (
+        <View key={fieldKey} style={styles.inputContainer}>
+          <ThemedText style={styles.label}>{field.label}</ThemedText>
+          <View style={[
+            styles.selectContainer, 
+            isFocused && styles.inputWrapperFocused,
+            errors[fieldKey] && styles.inputError
+          ]}>
+            <select
+              style={styles.select}
+              value={fieldValue as string || ''}
+              onChange={(e) => {
+                const target = e.target as HTMLSelectElement;
+                handleInputChange(fieldKey, target.value);
+              }}
+              onFocus={() => setFocusedField(fieldKey)}
+              onBlur={() => setFocusedField(null)}
+            >
+              <option value="">{field.placeholder || 'Select an option'}</option>
+              {field.options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </View>
+          {errors[fieldKey] && (
+            <ThemedText style={styles.fieldError}>{errors[fieldKey]}</ThemedText>
+          )}
+        </View>
+      );
+    }
+
+    if (fieldType === 'checkbox') {
+      const checked = Boolean(fieldValue);
+      return (
+        <TouchableOpacity
+          key={fieldKey}
+          style={styles.checkboxContainer}
+          onPress={() => handleInputChange(fieldKey, !checked)}
+        >
+          <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+            {checked && <View style={styles.checkboxInner} />}
+          </View>
+          <ThemedText style={styles.checkboxLabel}>{field.label}</ThemedText>
+        </TouchableOpacity>
+      );
+    }
+
+    if (fieldType === 'radio' && field.options) {
+      return (
+        <View key={fieldKey} style={styles.inputContainer}>
+          <ThemedText style={styles.label}>{field.label}</ThemedText>
+          <View style={styles.radioGroup}>
+            {field.options.map((option) => {
+              const isSelected = fieldValue === option.value;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={styles.radioOption}
+                  onPress={() => handleInputChange(fieldKey, option.value)}
+                >
+                  <View style={styles.radioOuter}>
+                    {isSelected && <View style={styles.radioInner} />}
+                  </View>
+                  <ThemedText style={styles.radioLabel}>{option.label}</ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      );
+    }
+
+    // Special handling for target INR range fields
+    if (fieldKey === 'targetInrLow' || fieldKey === 'targetInrHigh') {
+      return (
+        <View key={fieldKey} style={styles.rangeInputContainer}>
+          {fieldKey === 'targetInrLow' && (
+            <ThemedText style={styles.label}>Target INR Range</ThemedText>
+          )}
+          <View style={[
+            styles.inputWrapper, 
+            isFocused && styles.inputWrapperFocused,
+            errors[fieldKey] && styles.inputError,
+            styles.rangeInputWrapper
+          ]}>
+            <TextInput
+              style={[styles.input, styles.rangeInput]}
+              placeholder={field.placeholder || 'Enter value'}
+              placeholderTextColor="#999"
+              keyboardType={field.keyboardType || 'decimal-pad'}
+              value={typeof fieldValue === 'string' ? fieldValue : ''}
+              onChangeText={(text) => handleInputChange(fieldKey, text)}
+              onFocus={() => setFocusedField(fieldKey)}
+              onBlur={() => setFocusedField((prev) => (prev === fieldKey ? null : prev))}
+              underlineColorAndroid="transparent"
+              selectionColor="#3D50B5"
+            />
+            {field.unit && fieldKey === 'targetInrHigh' && (
+              <ThemedText style={styles.unit}>{field.unit}</ThemedText>
+            )}
+          </View>
+          {fieldKey === 'targetInrHigh' && errors['targetInrLow'] && !errors['targetInrHigh'] && (
+            <ThemedText style={styles.fieldError}>{errors['targetInrLow']}</ThemedText>
+          )}
+          {fieldKey === 'targetInrHigh' && errors['targetInrHigh'] && (
+            <ThemedText style={styles.fieldError}>{errors['targetInrHigh']}</ThemedText>
+          )}
+        </View>
+      );
+    }
+
+    // Default input field
+    return (
+      <View key={fieldKey} style={styles.inputContainer}>
+        <ThemedText style={styles.label}>{field.label}</ThemedText>
+        <View style={[
+          styles.inputWrapper, 
+          isFocused && styles.inputWrapperFocused,
+          errors[fieldKey] && styles.inputError
+        ]}>
+          <TextInput
+            style={styles.input}
+            placeholder={field.placeholder || 'Enter value'}
+            placeholderTextColor="#999"
+            keyboardType={field.keyboardType || 'decimal-pad'}
+            value={typeof fieldValue === 'string' ? fieldValue : ''}
+            onChangeText={(text) => handleInputChange(fieldKey, text)}
+            onFocus={() => setFocusedField(fieldKey)}
+            onBlur={() => setFocusedField((prev) => (prev === fieldKey ? null : prev))}
+            underlineColorAndroid="transparent"
+            selectionColor="#3D50B5"
+          />
+          {field.unit && <ThemedText style={styles.unit}>{field.unit}</ThemedText>}
+        </View>
+        {errors[fieldKey] && (
+          <ThemedText style={styles.fieldError}>{errors[fieldKey]}</ThemedText>
+        )}
+      </View>
+    );
+  };
+
+
   return (
     <form 
       ref={formRef}
@@ -83,160 +245,55 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
           style={{ display: 'none' }}
           aria-hidden="true"
         />
-      <View style={styles.headerRow}>
-        <ThemedText style={styles.title}>Input Values</ThemedText>
-        <TouchableOpacity onPress={onReset} style={styles.resetButton}>
-          <ThemedText style={styles.resetButtonText}>Reset</ThemedText>
-        </TouchableOpacity>
-      </View>
-      {fields.map((field) => {
-        const fieldKey = field.id || field.label;
-        const fieldType = field.type || 'number';
-        const fieldValue = values[fieldKey];
-        const isFocused = focusedField === fieldKey;
-
-        if (fieldType === 'select' && field.options) {
+        <View style={styles.headerRow}>
+          <ThemedText style={styles.title}>Input Values</ThemedText>
+          <TouchableOpacity onPress={onReset} style={styles.resetButton}>
+            <ThemedText style={styles.resetButtonText}>Reset</ThemedText>
+          </TouchableOpacity>
+        </View>
+        {Object.entries(groupedFields).map(([groupId, groupFields]) => {
+          // If it's a single field or not a group, render normally
+          if (groupFields.length === 1 || !groupFields[0].group) {
+            const field = groupFields[0];
+            const fieldKey = field.id || field.label;
+            const fieldType = field.type || 'number';
+            const fieldValue = values[fieldKey];
+            const isFocused = focusedField === fieldKey;
+            
+            return renderField(field);
+          }
+          
+          // For grouped fields, render them in a row
           return (
-            <View key={fieldKey} style={styles.inputContainer}>
-              <ThemedText style={styles.label}>{field.label}</ThemedText>
-              <View style={[
-                styles.selectContainer, 
-                isFocused && styles.inputWrapperFocused,
-                errors[fieldKey] && styles.inputError
-              ]}>
-                <select
-                  style={styles.select}
-                  value={fieldValue as string || ''}
-                  onChange={(e) => {
-                    const target = e.target as HTMLSelectElement;
-                    onChange(fieldKey, target.value);
-                  }}
-                  onFocus={() => setFocusedField(fieldKey)}
-                  onBlur={() => setFocusedField(null)}
-                >
-                  <option value="">{field.placeholder || 'Select an option'}</option>
-                  {field.options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </View>
-              {errors[fieldKey] && (
-                <ThemedText style={styles.fieldError}>{errors[fieldKey]}</ThemedText>
-              )}
+            <View key={groupId} style={styles.groupedContainer}>
+              {groupFields.map((field, index) => {
+                const fieldKey = field.id || field.label;
+                const fieldType = field.type || 'number';
+                const fieldValue = values[fieldKey];
+                const isFocused = focusedField === fieldKey;
+                
+                return (
+                  <React.Fragment key={fieldKey}>
+                    {renderField({
+                      ...field,
+                      hideLabel: index > 0,
+                      id: fieldKey,
+                      value: fieldValue,
+                      onChange: (value: string | boolean) => handleInputChange(fieldKey, value),
+                      onFocus: () => setFocusedField(fieldKey),
+                      onBlur: () => setFocusedField(null),
+                      isFocused
+                    })}
+                    {/* Add hyphen between range fields */}
+                    {index === 0 && groupId === 'targetRange' && (
+                      <ThemedText style={styles.rangeSeparator}>-</ThemedText>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </View>
           );
-        }
-
-        if (fieldType === 'date') {
-          return (
-            <View key={fieldKey} style={styles.inputContainer}>
-              <ThemedText style={styles.label}>{field.label}</ThemedText>
-              <View style={[
-                styles.inputWrapper, 
-                isFocused && styles.inputWrapperFocused,
-                errors[fieldKey] && styles.inputError
-              ]}>
-                <input
-                  type="date"
-                  style={styles.dateInput}
-                  value={fieldValue as string || field.defaultValue || ''}
-                  onChange={(e) => {
-                    const target = e.target as HTMLInputElement;
-                    onChange(fieldKey, target.value);
-                  }}
-                  onFocus={() => setFocusedField(fieldKey)}
-                  onBlur={() => setFocusedField((prev) => (prev === fieldKey ? null : prev))}
-                  min={field.min as string}
-                  max={field.max as string}
-                  className="date-input-no-outline"
-                  onKeyDown={(e) => {
-                    // Prevent default behavior for space key to avoid focus ring
-                    if (e.key === ' ') {
-                      e.preventDefault();
-                    }
-                  }}
-                />
-              </View>
-              {errors[fieldKey] && (
-                <ThemedText style={styles.fieldError}>{errors[fieldKey]}</ThemedText>
-              )}
-            </View>
-          );
-        }
-
-        if (fieldType === 'checkbox') {
-          const checked = Boolean(fieldValue);
-          return (
-            <TouchableOpacity
-              key={fieldKey}
-              style={[styles.checkboxContainer, checked && styles.checkboxContainerChecked]}
-              onPress={() => onChange(fieldKey, !checked)}
-              activeOpacity={0.85}
-            >
-              <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
-                {checked && <View style={styles.checkboxIndicator} />}
-              </View>
-              <ThemedText style={styles.checkboxLabel}>{field.label}</ThemedText>
-            </TouchableOpacity>
-          );
-        }
-
-        if (fieldType === 'radio' && field.options) {
-          return (
-            <View key={fieldKey} style={styles.radioGroupContainer}>
-              <ThemedText style={styles.label}>{field.label}</ThemedText>
-              <View style={styles.radioOptionsContainer}>
-                {field.options.map((option) => {
-                  const isSelected = values[fieldKey] === option.value;
-                  return (
-                    <TouchableOpacity
-                      key={`${fieldKey}-${option.value}`}
-                      style={[styles.radioOption, isSelected && styles.radioOptionSelected]}
-                      onPress={() => onChange(fieldKey, option.value)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={styles.radioOuter}>
-                        {isSelected && <View style={styles.radioInner} />}
-                      </View>
-                      <ThemedText style={styles.radioLabel}>{option.label}</ThemedText>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          );
-        }
-
-        return (
-          <View key={fieldKey} style={styles.inputContainer}>
-            <ThemedText style={styles.label}>{field.label}</ThemedText>
-            <View style={[
-              styles.inputWrapper, 
-              isFocused && styles.inputWrapperFocused,
-              errors[fieldKey] && styles.inputError
-            ]}>
-              <TextInput
-                style={styles.input}
-                placeholder={field.placeholder || 'Enter value'}
-                placeholderTextColor="#999"
-                keyboardType={field.keyboardType || 'decimal-pad'}
-                value={typeof fieldValue === 'string' ? fieldValue : ''}
-                onChangeText={(text) => onChange(fieldKey, text)}
-                onFocus={() => setFocusedField(fieldKey)}
-                onBlur={() => setFocusedField((prev) => (prev === fieldKey ? null : prev))}
-                underlineColorAndroid="transparent"
-                selectionColor="#3D50B5"
-              />
-              {field.unit ? <ThemedText style={styles.unit}>{field.unit}</ThemedText> : null}
-            </View>
-            {errors[fieldKey] && (
-              <ThemedText style={styles.fieldError}>{errors[fieldKey]}</ThemedText>
-            )}
-          </View>
-        );
-      })}
+        })}
 
 
       <Pressable 
@@ -260,6 +317,49 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
 };
 
 const styles = StyleSheet.create({
+  rangeFieldsContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 10,
+    marginBottom: 16,
+  },
+  rangeInputContainer: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  rangeInputWrapper: {
+    flex: 1,
+  },
+  rangeInput: {
+    textAlign: 'center',
+  },
+  rangeSeparator: {
+    fontSize: 20,
+    marginHorizontal: 4,
+    marginBottom: 8,
+    color: '#666',
+    alignSelf: 'flex-end',
+    paddingBottom: 4,
+  },
+  groupedContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginBottom: 16,
+    gap: 8,
+  },
+  groupedField: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  groupedLabel: {
+    marginBottom: 4,
+  },
+  groupedInputWrapper: {
+    flex: 1,
+  },
+  groupedInput: {
+    flex: 1,
+  },
   dateInput: {
     flex: 1,
     padding: 10,
@@ -267,22 +367,11 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     backgroundColor: 'transparent',
     color: '#333',
-    outline: 'none',
+    outlineWidth: 0,
     boxShadow: 'none',
     WebkitAppearance: 'none',
     MozAppearance: 'none',
     appearance: 'none',
-    '&::-webkit-datetime-edit': {
-      padding: 0,
-    },
-    '&::-webkit-inner-spin-button, &::-webkit-calendar-picker-indicator': {
-      display: 'none',
-      WebkitAppearance: 'none',
-    },
-    '&:focus': {
-      outline: 'none',
-      boxShadow: 'none',
-    },
   },
   selectContainer: {
     borderWidth: 1,

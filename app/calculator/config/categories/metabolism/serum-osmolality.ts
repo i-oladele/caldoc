@@ -1,4 +1,4 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const serumOsmolalityConfig: CalculatorConfig = {
   id: 'serum-osmolality',
@@ -48,24 +48,37 @@ export const serumOsmolalityConfig: CalculatorConfig = {
     }
     return Object.keys(errors).length > 0 ? errors : null;
   },
-  calculate: (values: { [key: string]: string }) => {
-    const sodium = parseFloat(values.Sodium);
-    const glucose = parseFloat(values.Glucose);
-    const bun = parseFloat(values.BUN);
+  calculate: (values: Record<string, string | boolean>) => {
+    const sodium = parseFloat(values.sodium as string);
+    const glucose = parseFloat(values.glucose as string);
+    const bun = parseFloat(values.bun as string);
     const osmolality = 2 * sodium + (glucose / 18) + (bun / 2.8);
     
     let interpretation = '';
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    
     if (osmolality < 275) {
       interpretation = 'Low Osmolality';
+      status = 'danger';
     } else if (osmolality <= 295) {
       interpretation = 'Normal Osmolality';
+      status = 'success';
+    } else if (osmolality <= 300) {
+      interpretation = 'Borderline High Osmolality';
+      status = 'warning';
     } else {
       interpretation = 'High Osmolality';
+      status = 'danger';
     }
     
     return {
       result: parseFloat(osmolality.toFixed(1)),
-      interpretation
+      interpretation,
+      status,
+      resultDetails: [
+        { label: 'Serum Osmolality', value: `${osmolality.toFixed(1)} mOsm/kg`, status },
+        { label: 'Interpretation', value: interpretation, status }
+      ]
     };
   },
   formula: 'Serum Osmolality = 2 × Na + (Glucose/18) + (BUN/2.8)',

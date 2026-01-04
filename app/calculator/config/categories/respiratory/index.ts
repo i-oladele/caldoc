@@ -5,5 +5,5 @@ export * from './curb65';
 export * from './oxygenation-index';
 export * from './p50';
 export * from './tcpo2';
-export * from './tcpo2-pao2';
 export * from './tidal-volume';
+

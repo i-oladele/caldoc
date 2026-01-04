@@ -56,15 +56,13 @@ export const CALCULATIONS: Calculation[] = [
     category: 'cardiology'
   },
   {
-    id: 'reynolds-risk',
+    id: 'reynolds',
     name: 'Reynolds Risk Score',
-    description: 'Another cardiovascular risk calculator including CRP and family history.',
+    description: 'Estimates 10-year cardiovascular risk, incorporating hs-CRP and family history.',
     category: 'cardiology'
   },
 
   // Critical Care
-  {
-  },
   {
     id: 'shock-index',
     name: 'Shock Index',
@@ -320,12 +318,6 @@ export const CALCULATIONS: Calculation[] = [
     id: 'tidal-volume',
     name: 'Tidal Volume Calculator',
     description: 'Calculates appropriate tidal volume based on patient characteristics.',
-    category: 'Respiratory'
-  },
-  {
-    id: 'tcpo2-pao2',
-    name: 'TcPO2/PaO2 Ratio',
-    description: 'Assesses tissue oxygenation by comparing transcutaneous and arterial oxygen levels.',
     category: 'Respiratory'
   },
   {

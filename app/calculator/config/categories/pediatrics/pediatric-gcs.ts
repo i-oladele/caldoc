@@ -22,7 +22,7 @@ export const pediatricGcsConfig: CalculatorConfig = {
       id: 'verbalResponse',
       type: 'select',
       label: 'Verbal Response',
-      placeholder: 'For children 0-23 months',
+      placeholder: 'Verbal Response',
       options: [
         { label: '5 - Coos, babbles (normal activity)', value: '5' },
         { label: '4 - Irritable cry', value: '4' },
@@ -46,62 +46,43 @@ export const pediatricGcsConfig: CalculatorConfig = {
       ],
       required: true
     },
-    {
-      id: 'ageGroup',
-      type: 'select',
-      label: 'Age Group',
-      options: [
-        { label: '0-23 months', value: 'infant' },
-        { label: '2-5 years', value: 'toddler' },
-        { label: '6-12 years', value: 'child' },
-        { label: '13+ years', value: 'adolescent' }
-      ],
-      required: true
-    }
   ],
   validate: (values) => {
-    const errors: Record<string, string> = {};
-    const requiredFields = ['eyeOpening', 'verbalResponse', 'motorResponse', 'ageGroup'];
-    let hasErrors = false;
-    
-    for (const field of requiredFields) {
-      if (!values[field]) {
-        errors[field] = `Please select a value for ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`;
-        hasErrors = true;
-      }
-    }
-    
-    return hasErrors ? errors : null;
+    if (!values.eyeOpening) return 'Please select an Eye Opening score';
+    if (!values.verbalResponse) return 'Please select a Verbal Response score';
+    if (!values.motorResponse) return 'Please select a Motor Response score';
+    return null;
   },
-  calculate: (values) => {
-    const eyeScore = parseInt(values.eyeOpening);
-    const verbalScore = parseInt(values.verbalResponse);
-    const motorScore = parseInt(values.motorResponse);
+  calculate: (values: Record<string, string | boolean>) => {
+    const eyeScore = parseInt(values.eyeOpening as string);
+    const verbalScore = parseInt(values.verbalResponse as string);
+    const motorScore = parseInt(values.motorResponse as string);
     const totalScore = eyeScore + verbalScore + motorScore;
     
     let interpretation = '';
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    
     if (totalScore <= 8) {
       interpretation = 'Severe brain injury';
+      status = 'danger';
     } else if (totalScore <= 12) {
       interpretation = 'Moderate brain injury';
+      status = 'warning';
     } else {
       interpretation = 'Minor brain injury';
-    }
-    
-    let ageSpecificNote = '';
-    if (values.ageGroup === 'infant') {
-      ageSpecificNote = 'For infants, always consider the child\'s baseline behavior and developmental stage.';
-    } else if (values.ageGroup === 'toddler') {
-      ageSpecificNote = 'For toddlers, consider using the standard GCS if the child can follow commands.';
-    } else if (values.ageGroup === 'child') {
-      ageSpecificNote = 'For children 6-12 years, the standard GCS is typically used if developmentally appropriate.';
-    } else {
-      ageSpecificNote = 'For adolescents, the standard GCS is typically used.';
+      status = 'success';
     }
     
     return {
       result: totalScore,
-      interpretation: `Pediatric GCS: ${totalScore}/15 (${interpretation})\n\nScores:\n- Eye Opening: ${eyeScore}/4\n- Verbal: ${verbalScore}/5\n- Motor: ${motorScore}/6\n\n${ageSpecificNote}`
+      status,
+      interpretation: `${interpretation} (${totalScore}/15)`,
+      resultDetails: [
+        { label: 'Eye Opening', value: eyeScore.toString() },
+        { label: 'Verbal Response', value: verbalScore.toString() },
+        { label: 'Motor Response', value: motorScore.toString() },
+        { label: 'Total GCS', value: totalScore.toString(), status }
+      ]
     };
   },
   formula: 'Pediatric GCS = Eye Opening + Verbal Response + Motor Response\n\nScoring:\n\nEye Opening (1-4):\n4 - Spontaneous\n3 - To voice\n2 - To pain\n1 - None\n\nVerbal Response (1-5 for infants):\n5 - Coos, babbles (normal activity)\n4 - Irritable cry\n3 - Cries to pain\n2 - Moans to pain\n1 - None\n\nMotor Response (1-6):\n6 - Normal spontaneous movements\n5 - Localizes to pain\n4 - Withdraws from pain\n3 - Abnormal flexion (decorticate)\n2 - Abnormal extension (decerebrate)\n1 - None',

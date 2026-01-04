@@ -6,14 +6,41 @@ export const infusionRateConfig: CalculatorConfig = {
   description: 'Calculates the infusion rate (mL/hr) for continuous intravenous medications using patient weight, prescribed dose, and drug concentration.',
   category: 'Pharmacology',
   fields: [
-    { label: 'Dose', placeholder: 'Enter dose (mg/kg/min)', unit: 'mg/kg/min', keyboardType: 'numeric' },
-    { label: 'Weight', placeholder: 'Enter weight (kg)', unit: 'kg', keyboardType: 'numeric' },
-    { label: 'Concentration', placeholder: 'Enter concentration (mg/mL)', unit: 'mg/mL', keyboardType: 'numeric' }
+    { 
+      id: 'dose',
+      type: 'number',
+      label: 'Dose', 
+      placeholder: 'Enter dose (mg/kg/min)', 
+      unit: 'mg/kg/min', 
+      keyboardType: 'numeric' 
+    },
+    { 
+      id: 'weight',
+      type: 'number',
+      label: 'Weight', 
+      placeholder: 'Enter weight (kg)', 
+      unit: 'kg', 
+      keyboardType: 'numeric' 
+    },
+    { 
+      id: 'concentration',
+      type: 'number',
+      label: 'Concentration', 
+      placeholder: 'Enter concentration (mg/mL)', 
+      unit: 'mg/mL', 
+      keyboardType: 'numeric' 
+    }
   ],
-  validate: (values: { [key: string]: string }) => {
-    const dose = parseFloat(values['Dose']);
-    const weight = parseFloat(values['Weight']);
-    const concentration = parseFloat(values['Concentration']);
+  validate: (values: { [key: string]: string | boolean | number }) => {
+    const parseValue = (val: string | number | boolean): number => {
+      if (typeof val === 'number') return val;
+      if (typeof val === 'string') return parseFloat(val) || 0;
+      return 0;
+    };
+    
+    const dose = parseValue(values['dose']);
+    const weight = parseValue(values['weight']);
+    const concentration = parseValue(values['concentration']);
     
     if (isNaN(dose) || dose <= 0) {
       return 'Dose must be positive';
@@ -26,10 +53,16 @@ export const infusionRateConfig: CalculatorConfig = {
     }
     return null;
   },
-  calculate: (values: { [key: string]: string }) => {
-    const dose = parseFloat(values['Dose']);
-    const weight = parseFloat(values['Weight']);
-    const concentration = parseFloat(values['Concentration']);
+  calculate: (values: { [key: string]: string | boolean | number }) => {
+    const parseValue = (val: string | number | boolean): number => {
+      if (typeof val === 'number') return val;
+      if (typeof val === 'string') return parseFloat(val) || 0;
+      return 0;
+    };
+    
+    const dose = parseValue(values['dose']);
+    const weight = parseValue(values['weight']);
+    const concentration = parseValue(values['concentration']);
     const rate = (dose * weight * 60) / concentration;
     
     return {
