@@ -1,14 +1,11 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig, CalculatorValues } from '@/app/calculator/config/calculator';
 
 export const childDoseConfig: CalculatorConfig = {
   id: 'child-dose',
+  name: 'Pediatric Dose Calculator',
+  description: 'Calculates the appropriate medication dose for children based on age using Young\'s formula',
+  category: 'Pediatrics',
   fields: [
-    {
-      label: 'Weight',
-      placeholder: 'Enter child weight (kg)',
-      unit: 'kg',
-      keyboardType: 'decimal-pad'
-    },
     {
       label: 'Adult Dose',
       placeholder: 'Enter adult dose (mg)',
@@ -22,14 +19,10 @@ export const childDoseConfig: CalculatorConfig = {
       keyboardType: 'decimal-pad'
     }
   ],
-  validate: (values: { [key: string]: string }) => {
-    const weight = parseFloat(values.Weight);
-    const adultDose = parseFloat(values['Adult Dose']);
-    const age = parseFloat(values.Age);
+  validate: (values: CalculatorValues) => {
+    const adultDose = parseFloat(values['Adult Dose'] as string);
+    const age = parseFloat(values.Age as string);
     
-    if (isNaN(weight) || weight <= 0) {
-      return 'Weight must be positive';
-    }
     if (isNaN(adultDose) || adultDose <= 0) {
       return 'Adult dose must be positive';
     }
@@ -38,10 +31,9 @@ export const childDoseConfig: CalculatorConfig = {
     }
     return null;
   },
-  calculate: (values: { [key: string]: string }) => {
-    const weight = parseFloat(values.Weight);
-    const adultDose = parseFloat(values['Adult Dose']);
-    const age = parseFloat(values.Age);
+  calculate: (values: CalculatorValues) => {
+    const adultDose = parseFloat(values['Adult Dose'] as string);
+    const age = parseFloat(values.Age as string);
     
     // Calculate using Young's formula
     const childDose = (age * adultDose) / (age + 12);

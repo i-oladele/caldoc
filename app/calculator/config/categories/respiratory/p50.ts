@@ -1,4 +1,4 @@
-import { CalculatorConfig } from '@/app/calculator/config/calculator';
+import { CalculationStatus, CalculatorConfig, CalculatorValues } from '@/app/calculator/config/calculator';
 
 export const p50Config: CalculatorConfig = {
   id: 'p50',
@@ -117,20 +117,18 @@ export const p50Config: CalculatorConfig = {
 
     return null;
   },
-  calculate: (values: { [key: string]: string | boolean | number | undefined }) => {
+  calculate: (values: CalculatorValues) => {
     // Parse input values
-    const pao2 = parseFloat(values.pao2 as string);
-    const sao2 = parseFloat(values.sao2 as string) / 100; // Convert to fraction
+    const pao2 = typeof values.pao2 === 'string' ? parseFloat(values.pao2) || 0 : 0;
+    const sao2 = typeof values.sao2 === 'string' ? parseFloat(values.sao2) / 100 : 0; // Convert to fraction
     
     // Parse optional values or use defaults
-    const ph = values.ph ? parseFloat(values.ph as string) : 7.4;
-    const temp = values.temp ? parseFloat(values.temp as string) : 37; // °C
-    const pco2 = values.pco2 ? parseFloat(values.pco2 as string) : 40; // mmHg
-    const dpg = values.dpg ? parseFloat(values.dpg as string) : 4.65; // μmol/g Hb (normal ~4.65)
+    const ph = values.ph ? (typeof values.ph === 'string' ? parseFloat(values.ph) : 7.4) : 7.4;
+    const temp = values.temp ? (typeof values.temp === 'string' ? parseFloat(values.temp) : 37) : 37; // °C
+    const pco2 = values.pco2 ? (typeof values.pco2 === 'string' ? parseFloat(values.pco2) : 40) : 40; // mmHg
+    const dpg = values.dpg ? (typeof values.dpg === 'string' ? parseFloat(values.dpg) : 4.65) : 4.65; // μmol/g Hb (normal ~4.65)
     
     // Calculate P50 using the Hill equation with standard parameters
-    // P50 = PO2 * ((0.5 / (1 - 0.5)) ^ (1/n)) / ((SaO2 / (1 - SaO2)) ^ (1/n))
-    // Where n is the Hill coefficient (~2.7 for normal hemoglobin)
     const hillCoefficient = 2.7; // Normal Hill coefficient
     
     // Simple calculation using Hill equation
@@ -138,66 +136,55 @@ export const p50Config: CalculatorConfig = {
                      Math.pow(sao2 / (1 - sao2), 1/hillCoefficient);
     
     // More complex calculation with corrections
-    // Temperature correction (ΔP50 = 0.22 * (37 - temp))
     const tempCorrection = 0.22 * (37 - temp);
-    
-    // pH correction (ΔP50 = -0.48 * (7.4 - pH))
     const phCorrection = -0.48 * (7.4 - ph);
-    
-    // PCO2 correction (ΔP50 = 0.05 * (pco2 - 40))
     const pco2Correction = 0.05 * (pco2 - 40);
-    
-    // 2,3-DPG correction (ΔP50 = 0.29 * (dpg - 4.65))
     const dpgCorrection = 0.29 * (dpg - 4.65);
     
     // Apply corrections to standard P50 (26.6 mmHg at 37°C, pH 7.4, PCO2 40)
     const correctedP50 = 26.6 + tempCorrection + phCorrection + pco2Correction + dpgCorrection;
+    const roundedP50 = parseFloat(correctedP50.toFixed(1));
     
-    // Determine interpretation
+    // Determine status and interpretation
+    let status: CalculationStatus = 'success';
     let interpretation = '';
+    
     if (correctedP50 < 22) {
-      interpretation = 'Increased oxygen affinity (left shift of oxygen-hemoglobin dissociation curve)';
-    } else if (correctedP50 > 28) {
-      interpretation = 'Decreased oxygen affinity (right shift of oxygen-hemoglobin dissociation curve)';
-    } else {
+      status = 'danger';
+      interpretation = 'Markedly increased oxygen affinity (significant left shift)';
+    } else if (correctedP50 < 24) {
+      status = 'warning';
+      interpretation = 'Mildly increased oxygen affinity (left shift)';
+    } else if (correctedP50 <= 28) {
+      status = 'success';
       interpretation = 'Normal oxygen affinity';
+    } else if (correctedP50 <= 30) {
+      status = 'warning';
+      interpretation = 'Mildly decreased oxygen affinity (right shift)';
+    } else {
+      status = 'danger';
+      interpretation = 'Markedly decreased oxygen affinity (significant right shift)';
     }
     
-    // List factors affecting P50
-    const factors = [
-      'Factors increasing P50 (right shift):',
-      '• Increased temperature',
-      '• Decreased pH (acidosis)',
-      '• Increased PCO₂',
-      '• Increased 2,3-DPG',
-      '• Fetal hemoglobin (HbF)',
-      '• Abnormal hemoglobins (e.g., Hb Kansas)',
-      '\nFactors decreasing P50 (left shift):',
-      '• Decreased temperature',
-      '• Increased pH (alkalosis)',
-      '• Decreased PCO₂',
-      '• Decreased 2,3-DPG',
-      '• Carbon monoxide poisoning',
-      '• Methemoglobinemia',
-      '• Abnormal hemoglobins (e.g., Hb Chesapeake)'
-    ].join('\n');
-    
-    // Clinical significance
+    // Clinical significance with color coding
     const clinicalNotes = [
-      'Clinical Significance:',
+      `P50: ${p50Simple.toFixed(1)} mmHg (calculated)`,
+      `Corrected P50: ${roundedP50} mmHg (standard conditions)`,
+      `Status: ${status === 'success' ? 'Normal' : status === 'warning' ? 'Borderline' : 'Abnormal'}`,
+      `\n${interpretation}`,
+      '\nNormal range: 24-28 mmHg',
+      '\nClinical Implications:',
       '• Left shift: Increased O₂ affinity → decreased O₂ delivery to tissues',
       '• Right shift: Decreased O₂ affinity → increased O₂ delivery to tissues',
-      '• P50 is typically measured at pH 7.4, PCO₂ 40 mmHg, 37°C',
-      '• Normal P50 range: 24-28 mmHg (varies by lab)'
+      '\nCommon Causes:',
+      '• Left shift: Alkalosis, hypothermia, CO poisoning, methemoglobinemia',
+      '• Right shift: Acidosis, fever, anemia, high altitude, 2,3-DPG increase'
     ].join('\n');
     
     return {
       result: p50Simple,
-      interpretation: `P50: ${p50Simple.toFixed(1)} mmHg\n` +
-                     `Corrected P50: ${correctedP50.toFixed(1)} mmHg\n\n` +
-                     `Interpretation: ${interpretation}\n\n` +
-                     `${factors}\n\n` +
-                     `${clinicalNotes}`
+      interpretation: clinicalNotes,
+      status
     };
   },
   formula: 'P50 Calculation:\n\n' +
@@ -205,18 +192,25 @@ export const p50Config: CalculatorConfig = {
            '   P50 = PaO₂ × (0.5/(1-0.5))^(1/n) / (SaO₂/(1-SaO₂))^(1/n)\n' +
            '   where n ≈ 2.7 (Hill coefficient)\n\n' +
            '2. Corrected P50 (standard conditions):\n' +
-           '   P50(corr) = P50 + ΔP50(temp) + ΔP50(pH) + ΔP50(PCO₂) + ΔP50(2,3-DPG)\n\n' +
-           'Correction Factors:\n' +
-           '• Temperature: ΔP50 = 0.22 × (37 - temp[°C])\n' +
-           '• pH: ΔP50 = -0.48 × (7.4 - pH)\n' +
-           '• PCO₂: ΔP50 = 0.05 × (PCO₂ - 40)\n' +
-           '• 2,3-DPG: ΔP50 = 0.29 × (2,3-DPG - 4.65 μmol/g Hb)',
+           '   P50_corr = 26.6 + 0.22(37 - temp) - 0.48(7.4 - pH) + 0.05(PCO₂ - 40) + 0.29(2,3-DPG - 4.65)\n\n' +
+           '   Where:\n' +
+           '   • 26.6 mmHg = standard P50 at 37°C, pH 7.4, PCO₂ 40 mmHg\n' +
+           '   • temp = temperature in °C\n' +
+           '   • pH = blood pH\n' +
+           '   • PCO₂ = partial pressure of CO₂ in mmHg\n' +
+           '   • 2,3-DPG = 2,3-diphosphoglycerate in μmol/g Hb\n\n' +
+           '3. Interpretation (Corrected P50):\n' +
+           '   • <22 mmHg: Markedly increased O₂ affinity (Left shift)\n' +
+           '   • 22-24 mmHg: Mildly increased O₂ affinity (Borderline left)\n' +
+           '   • 24-28 mmHg: Normal O₂ affinity\n' +
+           '   • 28-30 mmHg: Mildly decreased O₂ affinity (Borderline right)\n' +
+           '   • >30 mmHg: Markedly decreased O₂ affinity (Right shift)',
   references: [
     'Thomas C, Lumb AB. Physiology of haemoglobin. Contin Educ Anaesth Crit Care Pain. 2012;12(5):251-256.',
     'Severinghaus JW. Simple, accurate equations for human blood O2 dissociation computations. J Appl Physiol Respir Environ Exerc Physiol. 1979;46(3):599-602.',
     'Bunn HF, Forget BG. Hemoglobin: Molecular, Genetic and Clinical Aspects. Philadelphia: WB Saunders; 1986.'
   ],
-  resultUnit: 'mmHg'
+  resultUnit: 'mmHg',
 };
 
 export default p50Config;

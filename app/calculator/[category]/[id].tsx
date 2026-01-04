@@ -141,6 +141,8 @@ export default function CalculatorScreen() {
           //Pharmacology
           'pharmacology/infusion-rate': () => 
             require('@/app/calculator/config/categories/pharmacology/infusion-rate'),
+          'pharmacology/gravity-infusion': () => 
+            require('@/app/calculator/config/categories/pharmacology/gravity-infusion'),
           'pharmacology/naranjo': () => 
             require('@/app/calculator/config/categories/pharmacology/naranjo'),
           

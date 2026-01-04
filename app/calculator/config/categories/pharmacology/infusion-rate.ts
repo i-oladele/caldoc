@@ -1,9 +1,12 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const infusionRateConfig: CalculatorConfig = {
   id: 'infusion-rate',
+  name: 'Weight-Based Drug Infusion Calculator',
+  description: 'Calculates the infusion rate (mL/hr) for continuous intravenous medications using patient weight, prescribed dose, and drug concentration.',
+  category: 'Pharmacology',
   fields: [
-    { label: 'Dose', placeholder: 'Enter dose (mg)', unit: 'mg', keyboardType: 'numeric' },
+    { label: 'Dose', placeholder: 'Enter dose (mg/kg/min)', unit: 'mg/kg/min', keyboardType: 'numeric' },
     { label: 'Weight', placeholder: 'Enter weight (kg)', unit: 'kg', keyboardType: 'numeric' },
     { label: 'Concentration', placeholder: 'Enter concentration (mg/mL)', unit: 'mg/mL', keyboardType: 'numeric' }
   ],
@@ -34,7 +37,7 @@ export const infusionRateConfig: CalculatorConfig = {
       interpretation: `Infusion Rate: ${rate.toFixed(1)} mL/hr`
     };
   },
-  formula: 'Infusion Rate (mL/hr) = (Dose × Weight × 60) / Concentration',
+  formula: 'Infusion Rate (mL/hr) = (Dose (mg/kg/min) × Weight (kg) × 60) / Concentration (mg/mL)',
   references: [
     'Critical Care Medicine. Guidelines for Medication Administration.',
     'Journal of Infusion Nursing. Standards of Practice.',

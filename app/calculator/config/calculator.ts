@@ -1,16 +1,17 @@
 export interface InputField {
   id: string;
   label: string;
-  type: 'number' | 'select' | 'radio' | 'checkbox';
+  type: 'number' | 'select' | 'radio' | 'checkbox' | 'date';
   placeholder?: string;
   required?: boolean | string;
   options?: Array<{ label: string; value: string }>;
-  min?: number;
-  max?: number;
+  min?: number | string;
+  max?: number | string;
   step?: number;
   unit?: string;
   keyboardType?: 'numeric' | 'decimal-pad' | 'number-pad' | 'default';
   value?: string;
+  defaultValue?: string;
 }
 
 export type CalculatorValues = Record<string, string | boolean>;

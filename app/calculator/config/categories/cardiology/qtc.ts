@@ -2,7 +2,7 @@ import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const qtcConfig: CalculatorConfig = {
   id: 'qtc',
-  name: 'QTc Calculator',
+  name: 'Corrected QT Interval (QTc)',
   description: 'Calculate corrected QT interval (QTc) using Bazett\'s formula',
   category: 'cardiology',
   fields: [

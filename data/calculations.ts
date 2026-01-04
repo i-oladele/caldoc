@@ -184,12 +184,6 @@ export const CALCULATIONS: Calculation[] = [
     category: 'metabolism'
   },
   {
-    id: 'ldl',
-    name: 'LDL Cholesterol',
-    description: 'Calculates LDL cholesterol using the Friedewald equation.',
-    category: 'metabolism'
-  },
-  {
     id: 'serum-osmolality',
     name: 'Serum Osmolality',
     description: 'Estimates serum osmolality from sodium, glucose, and BUN.',
@@ -274,8 +268,14 @@ export const CALCULATIONS: Calculation[] = [
    // Pharmacology
    {
     id: 'infusion-rate',
-    name: 'Infusion Rate Calculator',
-    description: 'Calculates appropriate infusion rate for medications.',
+    name: 'Weight-Based Drug Infusion Calculator',
+    description: 'Calculates the infusion rate (mL/hr) for continuous intravenous medications using patient weight, prescribed dose, and drug concentration.',
+    category: 'Pharmacology'
+  },
+  {
+    id: 'gravity-infusion',
+    name: 'Gravity Infusion (Drop Rate) Calculator',
+    description: 'Determines the drip rate in drops per minute (gtt/min) using total volume, infusion time, and giving-set drop factor.',
     category: 'Pharmacology'
   },
   {

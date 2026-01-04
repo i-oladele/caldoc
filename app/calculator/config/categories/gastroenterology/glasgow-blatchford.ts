@@ -91,10 +91,10 @@ export const glasgowBlatchfordConfig: CalculatorConfig = {
     const hemoglobin = parseFloat(values.hemoglobin as string);
     const systolicBP = parseInt(values.systolicBP as string);
     const heartRate = parseInt(values.heartRate as string);
-    const melena = values.melena === 'true';
-    const syncope = values.syncope === 'true';
-    const liverDisease = values.liverDisease === 'true';
-    const heartFailure = values.heartFailure === 'true';
+    const melena = values.melena === 'true' || values.melena === true;
+    const syncope = values.syncope === 'true' || values.syncope === true;
+    const liverDisease = values.liverDisease === 'true' || values.liverDisease === true;
+    const heartFailure = values.heartFailure === 'true' || values.heartFailure === true;
 
     // Calculate score components
     let score = 0;
@@ -118,45 +118,63 @@ export const glasgowBlatchfordConfig: CalculatorConfig = {
     // Other components
     if (melena) score += 1;
     if (syncope) score += 1;
-    if (liverDisease) score += 2;
-    if (heartFailure) score += 2;
-
-    // Determine risk level and interpretation
-    let interpretation = '';
+    // Calculate final score
+    const totalScore = score;
     
-    if (score === 0) {
-      interpretation = 'Low Risk: Consider outpatient management. Low likelihood of needing intervention.';
-    } else if (score <= 6) {
-      interpretation = 'Moderate Risk: Consider admission for observation and early endoscopy.';
+    // Determine risk level and status
+    let riskLevel = '';
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    let recommendation = '';
+    
+    if (totalScore <= 1) {
+      riskLevel = 'Low risk';
+      status = 'success';
+      recommendation = 'Consider outpatient management';
+    } else if (totalScore <= 6) {
+      riskLevel = 'Moderate risk';
+      status = 'warning';
+      recommendation = 'Consider short-stay observation or admission';
     } else {
-      interpretation = 'High Risk: Urgent hospital admission and endoscopy within 24 hours required.';
+      riskLevel = 'High risk';
+      status = 'danger';
+      recommendation = 'Hospital admission and urgent intervention likely needed';
     }
 
-    // Store the detailed information in a memory for reference if needed
-    const detailedInfo = {
-      score,
-      riskLevel: score === 0 ? 'Low Risk' : score <= 6 ? 'Moderate Risk' : 'High Risk',
-      recommendations: score === 0 ? [
-        'Consider outpatient management',
-        'Low likelihood of needing intervention',
-        'Consider early discharge if clinically appropriate'
-      ] : score <= 6 ? [
-        'Consider admission for observation',
-        'Monitor for signs of ongoing bleeding',
-        'Consider early endoscopy'
-      ] : [
-        'Urgent hospital admission required',
-        'Consider ICU admission if unstable',
-        'Urgent endoscopy within 24 hours',
-        'Consider blood transfusion if needed',
-        'Involve gastroenterology team'
-      ]
-    };
+    // Generate recommendations based on score
+    const recommendations = score === 0 ? [
+      'Consider outpatient management',
+      'Low likelihood of needing intervention',
+      'Consider early discharge if clinically appropriate'
+    ] : score <= 6 ? [
+      'Consider admission for observation',
+      'Monitor for signs of ongoing bleeding',
+      'Consider early endoscopy'
+    ] : [
+      'Urgent hospital admission required',
+      'Consider ICU admission if unstable',
+      'Urgent endoscopy within 24 hours',
+      'Consider blood transfusion if needed',
+      'Involve gastroenterology team'
+    ];
 
-    // Return the result in the expected format
+    // Return the result with status and details
     return {
       result: score,
-      interpretation: interpretation
+      status,
+      interpretation: `Glasgow-Blatchford Score: ${score} (${riskLevel})`,
+      resultDetails: [
+        { label: 'Blood Urea', value: bloodUrea.toString(), status: 'info' },
+        { label: 'Hemoglobin', value: `${hemoglobin} g/dL`, status: 'info' },
+        { label: 'Systolic BP', value: `${systolicBP} mmHg`, status: 'info' },
+        { label: 'Heart Rate', value: `${heartRate} bpm`, status: 'info' },
+        { label: 'Melena', value: melena ? 'Present' : 'Absent', status: 'info' },
+        { label: 'Syncope', value: syncope ? 'Present' : 'Absent', status: 'info' },
+        { label: 'Liver Disease', value: liverDisease ? 'Present' : 'Absent', status: 'info' },
+        { label: 'Heart Failure', value: heartFailure ? 'Present' : 'Absent', status: 'info' },
+        { label: 'Total Score', value: score.toString(), status },
+        { label: 'Recommendation', value: recommendation, status }
+      ],
+      recommendations
     };
   },
   formula: 'Glasgow-Blatchford Score Calculation:\n\n' +

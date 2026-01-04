@@ -1,4 +1,4 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const lactateClearanceConfig: CalculatorConfig = {
   id: 'lactate-clearance',
@@ -48,16 +48,31 @@ export const lactateClearanceConfig: CalculatorConfig = {
     if (initial === 0) {
       return { 
         result: 0, 
-        interpretation: 'Cannot calculate clearance: initial lactate is 0' 
+        interpretation: 'Cannot calculate clearance: initial lactate is 0',
+        status: 'danger' as const
       };
     }
     
     const clearance = ((initial - repeat) / initial) * 100;
-    const interpretation = clearance >= 10 ? 'Adequate clearance (≥10%)' : 'Inadequate clearance (<10%)';
+    
+    let interpretation: string;
+    let status: 'success' | 'warning' | 'danger';
+    
+    if (clearance >= 10) {
+      interpretation = 'Adequate clearance (≥10%)';
+      status = 'success';
+    } else if (clearance >= 0) {
+      interpretation = 'Borderline clearance (0-10%)';
+      status = 'warning';
+    } else {
+      interpretation = 'Worsening lactate levels (negative clearance)';
+      status = 'danger';
+    }
     
     return {
       result: parseFloat(clearance.toFixed(1)),
-      interpretation: interpretation
+      interpretation,
+      status
     };
   },
   formula: 'Clearance (%) = [(Initial Lactate - Repeat Lactate) / Initial Lactate] × 100',

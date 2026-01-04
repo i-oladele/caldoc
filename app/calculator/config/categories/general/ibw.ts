@@ -1,7 +1,10 @@
-import { CalculatorConfig, InputField } from '@/app/calculator/config/calculator';
+import { CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const ibwConfig: CalculatorConfig = {
   id: 'ibw',
+  name: 'Ideal Body Weight',
+  description: 'Estimates ideal body weight for dosing and nutritional assessment',
+  category: 'general',
   fields: [
     {
       label: 'Height',
@@ -10,15 +13,20 @@ export const ibwConfig: CalculatorConfig = {
       keyboardType: 'decimal-pad'
     },
     {
+      id: 'gender',
       label: 'Gender',
+      type: 'select',
       placeholder: 'Select gender',
-      unit: '',
-      keyboardType: 'default'
+      options: [
+        { label: 'Male', value: 'male' },
+        { label: 'Female', value: 'female' }
+      ],
+      required: true
     }
   ],
   validate: (values: { [key: string]: string }) => {
     const height = parseFloat(values.Height);
-    const gender = values.Gender.toLowerCase();
+    const gender = values.gender?.toLowerCase();
     
     if (isNaN(height) || height <= 0) {
       return 'Height must be positive';
@@ -30,7 +38,7 @@ export const ibwConfig: CalculatorConfig = {
   },
   calculate: (values: { [key: string]: string }) => {
     const height = parseFloat(values.Height);
-    const gender = values.Gender.toLowerCase();
+    const gender = values.gender?.toLowerCase();
     
     // Using Devine formula
     let ibw;
@@ -45,12 +53,18 @@ export const ibwConfig: CalculatorConfig = {
       interpretation: ''
     };
   },
-  formula: 'IBW = Base weight + (Height - 152.4 cm) × 2.3 lb/in',
-  references: [
-    'Clinical Nutrition. Weight Estimation.',
-    'American Journal of Clinical Nutrition. IBW Calculation.',
-    'Journal of Clinical Medicine. Weight Assessment.'
-  ],
+  formula: `Ideal Body Weight (IBW) is calculated using the Devine formula:
+
+  For men:  50 kg + 2.3 kg × (Height in cm - 152.4)/2.54
+  For women: 45.5 kg + 2.3 kg × (Height in cm - 152.4)/2.54
+
+  Where:
+  - 50 kg is the base weight for men at 5 feet (152.4 cm)
+  - 45.5 kg is the base weight for women at 5 feet (152.4 cm)
+  - 2.3 kg is the weight added per inch over 5 feet
+  - Height is converted from cm to inches for calculation
+
+  Note: This formula is most accurate for individuals of average height and should be used with caution in clinical settings.`,
   resultUnit: 'kg'
 };
 

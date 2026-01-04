@@ -1,4 +1,4 @@
-import { CalculatorConfig } from '@/app/calculator/config/calculator';
+import { CalculationStatus, CalculatorConfig } from '@/app/calculator/config/calculator';
 
 export const meldConfig: CalculatorConfig = {
   id: 'meld',
@@ -87,7 +87,7 @@ export const meldConfig: CalculatorConfig = {
     
     return null;
   },
-  calculate: (values: { [key: string]: string | boolean }) => {
+  calculate: (values: { [key: string]: string | boolean }): { result: number; interpretation: string; status: CalculationStatus } => {
     // Parse input values with type assertions
     const bilirubin = parseFloat(values.bilirubin as string);
     const inr = parseFloat(values.inr as string);
@@ -143,9 +143,18 @@ export const meldConfig: CalculatorConfig = {
       resultText += `\nMELD-Na Score: ${meldNaScore}`;
     }
     
+    // Determine status for color coding
+    let status: 'success' | 'warning' | 'danger' = 'success';
+    if (meldScore >= 25) {
+      status = 'danger';
+    } else if (meldScore >= 15) {
+      status = 'warning';
+    }
+    
     return {
       result: meldNaScore !== null ? meldNaScore : meldScore, // Use MELD-Na if available, otherwise MELD
-      interpretation: `${resultText}\n\n${interpretation}`
+      interpretation: `${resultText}\n\n${interpretation}`,
+      status
     };
   },
   formula: 'MELD Score = 3.78 × ln(serum bilirubin [mg/dL]) + 11.2 × ln(INR) + 9.57 × ln(serum creatinine [mg/dL]) + 6.43\n' +

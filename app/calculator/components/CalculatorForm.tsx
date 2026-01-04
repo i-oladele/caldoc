@@ -1,5 +1,5 @@
 import { ThemedText } from '@/components/ThemedText';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { CalculatorValues, InputField } from '../config/calculator';
 
@@ -22,6 +22,29 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
 }) => {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isSubmitHovered, setIsSubmitHovered] = useState(false);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      input[type="date"]:focus {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+      input[type="date"]::-webkit-calendar-picker-indicator:focus {
+        background-color: transparent;
+      }
+      input[type="date"]::-moz-focus-inner {
+        border: 0;
+      }
+      .date-input-no-outline:focus {
+        outline: none;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const formRef = useRef<HTMLFormElement>(null);
   const inputRefs = useRef<{[key: string]: any}>({});
 
@@ -98,6 +121,43 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
                     </option>
                   ))}
                 </select>
+              </View>
+              {errors[fieldKey] && (
+                <ThemedText style={styles.fieldError}>{errors[fieldKey]}</ThemedText>
+              )}
+            </View>
+          );
+        }
+
+        if (fieldType === 'date') {
+          return (
+            <View key={fieldKey} style={styles.inputContainer}>
+              <ThemedText style={styles.label}>{field.label}</ThemedText>
+              <View style={[
+                styles.inputWrapper, 
+                isFocused && styles.inputWrapperFocused,
+                errors[fieldKey] && styles.inputError
+              ]}>
+                <input
+                  type="date"
+                  style={styles.dateInput}
+                  value={fieldValue as string || field.defaultValue || ''}
+                  onChange={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    onChange(fieldKey, target.value);
+                  }}
+                  onFocus={() => setFocusedField(fieldKey)}
+                  onBlur={() => setFocusedField((prev) => (prev === fieldKey ? null : prev))}
+                  min={field.min as string}
+                  max={field.max as string}
+                  className="date-input-no-outline"
+                  onKeyDown={(e) => {
+                    // Prevent default behavior for space key to avoid focus ring
+                    if (e.key === ' ') {
+                      e.preventDefault();
+                    }
+                  }}
+                />
               </View>
               {errors[fieldKey] && (
                 <ThemedText style={styles.fieldError}>{errors[fieldKey]}</ThemedText>
@@ -200,6 +260,30 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
 };
 
 const styles = StyleSheet.create({
+  dateInput: {
+    flex: 1,
+    padding: 10,
+    fontSize: 16,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    color: '#333',
+    outline: 'none',
+    boxShadow: 'none',
+    WebkitAppearance: 'none',
+    MozAppearance: 'none',
+    appearance: 'none',
+    '&::-webkit-datetime-edit': {
+      padding: 0,
+    },
+    '&::-webkit-inner-spin-button, &::-webkit-calendar-picker-indicator': {
+      display: 'none',
+      WebkitAppearance: 'none',
+    },
+    '&:focus': {
+      outline: 'none',
+      boxShadow: 'none',
+    },
+  },
   selectContainer: {
     borderWidth: 1,
     borderColor: '#E0E0E0',
@@ -287,12 +371,20 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     borderRadius: 8,
     paddingHorizontal: 16,
+    overflow: 'hidden',
+    transition: 'border-color 0.2s ease',
+    '&:focus-within': {
+      borderColor: '#3D50B5',
+      boxShadow: '0 0 0 1px #3D50B5',
+      outline: 'none',
+    },
   },
   inputWrapperFocused: {
     borderColor: '#3D50B5',
     backgroundColor: '#F6F8FF',
-    shadowColor: '#3D50B5',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: 'transparent',
+    boxShadow: '0 0 0 1px #3D50B5',
+    outline: 'none',
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
